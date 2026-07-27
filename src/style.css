@@ -913,9 +913,56 @@ details.agent-thought-block .thought-content {
   color: #fdba74;
 }
 
+.key-config-btn.custom-active {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+
 .key-config-btn:hover {
   border-color: var(--primary-light);
   color: var(--primary-light);
+}
+
+.key-config-btn.custom-active {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Custom API active model badge */
+.custom-model-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  animation: fadeIn 0.3s ease;
+}
+
+.custom-model-icon {
+  font-size: 13px;
+}
+
+#custom-model-name {
+  font-weight: 600;
+  color: #6ee7b7;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.custom-model-label {
+  color: var(--text-muted);
+  font-size: 10px;
+  margin-left: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Custom Glassmorphic Modal Dialog */

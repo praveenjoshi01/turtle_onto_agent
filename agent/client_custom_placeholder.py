@@ -97,10 +97,13 @@ def handle_custom_api_request(payload: dict) -> dict:
             f"To connect to your live API, edit `handle_custom_api_request()` in `agent/client_custom_placeholder.py`!"
         )
 
+        # Demonstration custom model name provided by external endpoint
+        endpoint_returned_model = os.getenv("CUSTOM_MODEL_NAME", "llama-3.3-70b-custom")
+
         return {
             "status": "success",
-            "gateway": "Custom API Endpoint (Blueprint)",
-            "model": model,
+            "gateway": "Custom API Endpoint Blueprint",
+            "model": endpoint_returned_model,
             "reply": reply_text
         }
 

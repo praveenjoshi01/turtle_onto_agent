@@ -15,20 +15,24 @@ export async function checkGatewayHealth(selectedModel = 'gpt-4o') {
       res = await fetch('/api/health');
     }
     const data = await res.json();
+    const isCustomModel = selectedModel.startsWith('custom');
     if (data.status === 'healthy') {
       return {
         healthy: true,
-        hasApiKey: Boolean(data.has_api_key),
+        isCustomModel: isCustomModel,
+        hasApiKey: isCustomModel ? true : Boolean(data.has_api_key),
         gateway: data.gateway || 'Onto Agent Gateway',
         model: selectedModel,
-        text: `Connected to ${data.gateway || 'Onto Agent Gateway'} (${selectedModel})`
+        text: isCustomModel ? `Connected to Custom API Endpoint` : `Connected to ${data.gateway || 'Onto Agent Gateway'} (${selectedModel})`
       };
     }
-    return { healthy: false, hasApiKey: false, text: `Gateway reported unhealthy status` };
+    return { healthy: false, hasApiKey: false, isCustomModel, text: `Gateway reported unhealthy status` };
   } catch (err) {
+    const isCustomModel = selectedModel.startsWith('custom');
     return {
       healthy: false,
-      hasApiKey: false,
+      hasApiKey: isCustomModel ? true : false,
+      isCustomModel,
       text: `Offline: python3 agent/client.py on port 8000 (${selectedModel})`
     };
   }

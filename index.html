@@ -166,14 +166,20 @@
           </div>
           
           <div class="model-selector-container" style="margin-top: 10px;">
-            <label for="model-select" style="font-size: 11px; color: var(--text-dim); display: block; margin-bottom: 4px;">Active LLM Model & Gateway:</label>
+            <label for="model-select" style="font-size: 11px; color: var(--text-dim); display: block; margin-bottom: 4px;">Active LLM Model &amp; Gateway:</label>
             <select id="model-select" class="custom-select" style="width: 100%; font-size: 12px; padding: 6px 8px;">
               <option value="gpt-4o" selected>OpenAI: GPT-4o (Default)</option>
               <option value="gpt-4o-mini">OpenAI: GPT-4o-mini</option>
               <option value="nousresearch/hermes-3-llama-3.1-405b">Nous Hermes 3 (405B)</option>
               <option value="nousresearch/hermes-3-llama-3.1-70b">Nous Hermes 3 (70B)</option>
-              <option value="custom-api">Custom API Endpoint (Blueprint)</option>
+              <option value="custom-api">🔌 Custom API Endpoint</option>
             </select>
+            <!-- Shown only when Custom API is active, reflects endpoint-returned model name -->
+            <div id="custom-model-badge" class="custom-model-badge" style="display:none;">
+              <span class="custom-model-icon">🔌</span>
+              <span id="custom-model-name">custom-api</span>
+              <span class="custom-model-label">via Custom Endpoint</span>
+            </div>
           </div>
         </div>
 

@@ -101,11 +101,6 @@ def set_api_key():
 
 @app.route("/api/chat", methods=["POST"])
 def chat_gateway():
-    if not api_key:
-        return jsonify({
-            "error": "API Key is missing. Please check your .env configuration or set it in the header menu."
-        }), 500
-
     data = request.get_json() or {}
     user_query = data.get("query", "").strip()
     turtle_content = data.get("turtle_content", "").strip()
@@ -117,13 +112,18 @@ def chat_gateway():
     if not user_query:
         return jsonify({"error": "No query provided."}), 400
 
-    # Intercept query if Custom Endpoint Blueprint is active (e.g. custom-api model selected or CUSTOM_API_ENDPOINT set)
+    # Intercept query if Custom Endpoint Blueprint is active (bypasses default API key check)
     if custom_handler_available and is_custom_handler_active(data):
         custom_res = handle_custom_api_request(data)
         if custom_res.get("status") == "success":
             return jsonify(custom_res)
         elif "error" in custom_res:
             return jsonify(custom_res), 500
+
+    if not api_key:
+        return jsonify({
+            "error": "API Key is missing. Please check your .env configuration or set it in the header menu."
+        }), 500
 
     try:
         provider = "openrouter" if ("nousresearch" in requested_model or openrouter_api_key or api_key.startswith("sk-or-")) else "openai-api"

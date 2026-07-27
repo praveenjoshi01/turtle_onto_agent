@@ -65,6 +65,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const modelSelect = document.getElementById('model-select');
   const agentStatusIndicator = document.getElementById('agent-status-indicator');
   const hermesAgentToggle = document.getElementById('hermes-agent-toggle');
+  const customModelBadge = document.getElementById('custom-model-badge');
+  const customModelNameEl = document.getElementById('custom-model-name');
+
+  /** Show/hide the custom model badge and toggle model select visibility */
+  function setCustomModelUI(isCustom, modelName = 'custom-api') {
+    if (!modelSelect || !customModelBadge) return;
+    if (isCustom) {
+      modelSelect.style.display = 'none';
+      customModelBadge.style.display = 'flex';
+      if (customModelNameEl) customModelNameEl.textContent = modelName;
+    } else {
+      modelSelect.style.display = '';
+      customModelBadge.style.display = 'none';
+    }
+  }
 
   let currentHasApiKey = false;
   // In-memory conversation history (persists until page refresh)
@@ -111,20 +126,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check Gateway Health & Model Status
   async function updateGatewayStatus() {
     const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
+    const isCustom = selectedModel.startsWith('custom');
     const status = await checkHealth(selectedModel);
-    currentHasApiKey = status.hasApiKey;
+
+    currentHasApiKey = isCustom ? true : status.hasApiKey;
+
+    // Show/hide custom model badge and model dropdown
+    setCustomModelUI(isCustom, customModelNameEl ? customModelNameEl.textContent : selectedModel);
 
     if (agentStatusIndicator) {
       const modeLabel = (hermesAgentToggle && !hermesAgentToggle.checked) ? 'Native Chat Mode' : (status.gateway || 'Onto Agent Gateway');
-      agentStatusIndicator.textContent = `Connected to ${modeLabel} (${selectedModel})`;
+      const displayModel = isCustom ? (customModelNameEl ? customModelNameEl.textContent : selectedModel) : selectedModel;
+      agentStatusIndicator.textContent = `Connected to ${modeLabel} (${displayModel})`;
       agentStatusIndicator.style.color = status.healthy ? 'var(--primary-light)' : 'var(--danger)';
     }
 
     if (keyConfigBtn && keyStatusText) {
-      if (status.hasApiKey) {
+      if (isCustom) {
         keyConfigBtn.classList.remove('missing');
+        keyConfigBtn.classList.add('custom-active');
+        keyStatusText.textContent = '🔌 Custom Endpoint Active';
+      } else if (status.hasApiKey) {
+        keyConfigBtn.classList.remove('missing', 'custom-active');
         keyStatusText.textContent = 'API Key Configured';
       } else {
+        keyConfigBtn.classList.remove('custom-active');
         keyConfigBtn.classList.add('missing');
         keyStatusText.textContent = '🔑 Connect OpenAI API';
       }
@@ -313,8 +339,15 @@ document.addEventListener('DOMContentLoaded', () => {
       chatHistory.push({ role: 'user', content: text });
       chatHistory.push({ role: 'assistant', content: result.reply });
 
+      // If custom endpoint returned its own model name, update badge live
+      const isCustom = selectedModel.startsWith('custom');
+      if (isCustom && result.model && result.model !== selectedModel) {
+        setCustomModelUI(true, result.model);
+      }
+
       if (agentStatusIndicator) {
-        agentStatusIndicator.textContent = `Connected to ${result.gateway} (${result.model})`;
+        const displayModel = isCustom ? (result.model || selectedModel) : (result.model || selectedModel);
+        agentStatusIndicator.textContent = `Connected to ${result.gateway} (${displayModel})`;
         agentStatusIndicator.style.color = 'var(--primary-light)';
       }
     } else {
