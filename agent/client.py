@@ -33,6 +33,19 @@ except Exception as exc:
     hermes_agent_available = False
     print(f"Notice: hermes_agent runner import fallback: {exc}", file=sys.stderr)
 
+# Try loading custom client handler blueprint (client_custom.py or client_custom_placeholder.py)
+try:
+    from client_custom import is_custom_handler_active, handle_custom_api_request  # type: ignore
+    custom_handler_available = True
+    print("✓ Custom Client Agent Handler (client_custom.py) loaded.")
+except ImportError:
+    try:
+        from client_custom_placeholder import is_custom_handler_active, handle_custom_api_request  # type: ignore
+        custom_handler_available = True
+        print("✓ Custom Client Agent Blueprint (client_custom_placeholder.py) loaded.")
+    except ImportError:
+        custom_handler_available = False
+
 if not api_key:
     print(f"Warning: API Key not found in {env_path}! Ensure 'OPENAI_API_KEY', 'open_ai', or 'OPENROUTER_API_KEY' is set.", file=sys.stderr)
 
@@ -103,6 +116,14 @@ def chat_gateway():
 
     if not user_query:
         return jsonify({"error": "No query provided."}), 400
+
+    # Intercept query if Custom Endpoint Blueprint is active (e.g. custom-api model selected or CUSTOM_API_ENDPOINT set)
+    if custom_handler_available and is_custom_handler_active(data):
+        custom_res = handle_custom_api_request(data)
+        if custom_res.get("status") == "success":
+            return jsonify(custom_res)
+        elif "error" in custom_res:
+            return jsonify(custom_res), 500
 
     try:
         provider = "openrouter" if ("nousresearch" in requested_model or openrouter_api_key or api_key.startswith("sk-or-")) else "openai-api"
