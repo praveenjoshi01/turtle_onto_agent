@@ -286,10 +286,14 @@ export class TurtleManager {
    */
   getLegendItems(graphNodes = []) {
     const groupCounts = new Map();
+    const groupShapes = new Map();
 
     graphNodes.forEach(node => {
       const group = node.group || 'Resource';
       groupCounts.set(group, (groupCounts.get(group) || 0) + 1);
+      if (!groupShapes.has(group)) {
+        groupShapes.set(group, node.shape || 'dot');
+      }
     });
 
     const legendItems = [];
@@ -297,6 +301,7 @@ export class TurtleManager {
       legendItems.push({
         groupKey: groupName,
         label: groupName,
+        shape: groupShapes.get(groupName) || 'dot',
         count: count
       });
     });

@@ -196,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const legendItemsContainer = document.getElementById('legend-items');
+  let activeLegendFilter = null;
 
   /**
    * Fetch current graph data & update Vis-Network graph and dynamic ontology legend
@@ -213,10 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
     statTriples.textContent = `${graphData.tripleCount} Triples`;
 
     renderLegend(graphData.nodes);
+
+    if (activeLegendFilter) {
+      graphRenderer.highlightGroup(activeLegendFilter);
+    }
   }
 
   /**
-   * Render dynamic Ontology Legend extracted from active Turtle files
+   * Render dynamic Ontology Legend with shape indicators and interactive canvas filtering
    */
   function renderLegend(nodes) {
     if (!legendItemsContainer) return;
@@ -224,17 +229,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (legendItems.length === 0) {
       legendItemsContainer.innerHTML = `<div class="empty-state">No RDF classes loaded</div>`;
+      activeLegendFilter = null;
       return;
     }
 
-    legendItemsContainer.innerHTML = legendItems.map(item => {
+    legendItemsContainer.innerHTML = '';
+
+    legendItems.forEach(item => {
       const colorDef = graphRenderer.getColorForGroup(item.groupKey);
-      return `<div class="legend-item" title="${escapeHtml(item.groupKey)} (${item.count} instances)">
-        <i style="background: ${colorDef.background}; border: 1px solid ${colorDef.border}"></i>
+      const isActive = activeLegendFilter === item.groupKey;
+
+      const itemEl = document.createElement('div');
+      itemEl.className = `legend-item ${isActive ? 'active' : ''}`;
+      itemEl.title = `Click to filter/highlight ${escapeHtml(item.label)} (${item.count} instances)`;
+      
+      itemEl.innerHTML = `
+        <i class="shape-icon shape-${item.shape || 'dot'}" style="background: ${colorDef.background}; border: 1px solid ${colorDef.border}"></i>
         <span class="legend-label">${escapeHtml(item.label)}</span>
         <span class="legend-count">${item.count}</span>
-      </div>`;
-    }).join('');
+      `;
+
+      itemEl.addEventListener('click', () => {
+        if (activeLegendFilter === item.groupKey) {
+          activeLegendFilter = null;
+          graphRenderer.highlightGroup(null);
+        } else {
+          activeLegendFilter = item.groupKey;
+          graphRenderer.highlightGroup(item.groupKey);
+        }
+        renderLegend(nodes);
+      });
+
+      legendItemsContainer.appendChild(itemEl);
+    });
   }
 
   /**

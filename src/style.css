@@ -377,20 +377,44 @@ body, html {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  cursor: pointer;
+  user-select: none;
   transition: all 0.2s ease;
 }
 
 .legend-item:hover {
   border-color: var(--border-highlight);
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(30, 41, 59, 0.95);
+  transform: translateY(-1px);
 }
 
-.legend-item i {
+.legend-item.active {
+  border-color: var(--primary-light);
+  background: rgba(56, 189, 248, 0.18);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+.shape-icon {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
+}
+
+.shape-icon.shape-dot {
+  border-radius: 50%;
+}
+
+.shape-icon.shape-box {
+  border-radius: 2px;
+}
+
+.shape-icon.shape-diamond {
+  transform: rotate(45deg);
+  border-radius: 1px;
+  width: 8px;
+  height: 8px;
+  margin: 1px;
 }
 
 .legend-label {

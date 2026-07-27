@@ -59,6 +59,7 @@ export class GraphRenderer {
         id: n.id,
         label: n.label,
         title: n.title,
+        groupKey: n.group,
         shape: n.shape || 'dot',
         size: n.shape === 'box' ? 16 : 22,
         color: {
@@ -197,6 +198,32 @@ export class GraphRenderer {
         animation: { duration: 600, easingFunction: 'easeInOutQuad' }
       });
       this.network.selectNodes([nodeId]);
+    }
+  }
+
+  /**
+   * Highlight and zoom to all nodes belonging to a specific group/class key
+   */
+  highlightGroup(groupKey) {
+    if (!this.network) return;
+
+    if (!groupKey) {
+      this.network.selectNodes([]);
+      this.fitViewport();
+      return;
+    }
+
+    const allNodes = this.network.body.data.nodes.get();
+    const matchingNodeIds = allNodes
+      .filter(n => n.groupKey === groupKey || n.group === groupKey)
+      .map(n => n.id);
+
+    if (matchingNodeIds.length > 0) {
+      this.network.selectNodes(matchingNodeIds);
+      this.network.fit({
+        nodes: matchingNodeIds,
+        animation: { duration: 600, easingFunction: 'easeInOutQuad' }
+      });
     }
   }
 }
