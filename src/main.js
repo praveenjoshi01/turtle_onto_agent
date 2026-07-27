@@ -419,16 +419,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const assistantMsgEl = appendChatMessage('assistant', 'Thinking...');
     const msgTextEl = assistantMsgEl.querySelector('.msg-text');
 
+    let response;
+    const payload = JSON.stringify({
+      query: text,
+      turtle_content: combinedTurtleText,
+      triples_summary: triplesSummary
+    });
+
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: text,
-          turtle_content: combinedTurtleText,
-          triples_summary: triplesSummary
-        })
-      });
+      try {
+        response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        });
+      } catch (err1) {
+        // Direct localhost:8000 fallback
+        response = await fetch('http://localhost:8000/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        });
+      }
 
       const resData = await response.json();
 
