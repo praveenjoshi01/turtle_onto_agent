@@ -14,7 +14,7 @@ This document provides developer guidelines and operational instructions for AI 
 ## 📁 Repository Organization
 
 ```
-OntoSphere/
+InternalOnto/
 ├── agent/               # Dedicated AI Agent components directory
 │   ├── client.py        # Python LLM API Gateway server (Onto Agent Gateway)
 │   ├── requirements.txt # Python requirements manifest

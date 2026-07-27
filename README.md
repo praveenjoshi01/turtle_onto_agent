@@ -58,7 +58,7 @@ Open `http://localhost:5173` in your browser.
 ## 📁 Repository Structure
 
 ```
-OntoSphere/
+InternalOnto/
 ├── agent/               # Dedicated AI Agent components directory
 │   ├── client.py        # Python LLM API Gateway server (Onto Agent Gateway)
 │   ├── requirements.txt # Python requirements manifest
