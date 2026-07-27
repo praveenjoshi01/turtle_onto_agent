@@ -56,15 +56,22 @@ InternalOnto/
 
 ## 🛠️ Execution & Verification Commands
 
-### 1. Python Gateway Server
+### ⚡ One-Step Automated Setup Command (All Dependencies + Hermes Agent)
+For any AI coding assistant or agentic IDE downloading this project, run this single command to download all dependencies, clone the official **Nous Research Hermes Agent** framework, and configure the Python `uv` environment:
+
 ```bash
-pip3 install -r agent/requirements.txt
-python3 agent/client.py
+npm run setup
+# OR: bash setup.sh
+```
+
+### 1. Launch Python Gateway Server
+```bash
+uv run python agent/client.py
 ```
 - Server endpoint: `http://localhost:8000`
 - Health check: `curl -s http://localhost:8000/api/health`
 
-### 2. Frontend Development Server
+### 2. Launch Frontend Development Server
 ```bash
 npm run dev
 ```

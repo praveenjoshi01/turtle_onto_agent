@@ -37,31 +37,35 @@ Developer and AI agent guidelines can be found in [agent.md](file:///Users/prave
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start & One-Command Setup
 
-### Prerequisites
-- Node.js (v18 or higher recommended)
-- Python 3.9+
+### ⚡ One-Step Automated Setup (All Dependencies + Hermes Agent)
 
-### 1. Configure Credentials (.env)
+Run this single command to automatically install Node.js dependencies, clone the official **Nous Research Hermes Agent** codebase, create the Python 3.12 `.venv` environment via `uv`, and install all agent packages:
 
+```bash
+npm run setup
+# OR: bash setup.sh
+```
+
+---
+
+### Manual Step-by-Step Setup
+
+#### 1. Configure Credentials (.env)
 Ensure your `.env` file exists in the repository root containing your API key:
 ```env
 OPENAI_API_KEY=sk-proj-...
 ```
 > Note: `.env` is listed in `.gitignore` to keep your credentials secure. You can also configure keys dynamically using the top header button (`🔑 Connect OpenAI API`) in the web UI.
 
-### 2. Launch Python LLM Gateway Server (`agent/client.py`)
-
-Install dependencies and start the gateway:
+#### 2. Launch Python LLM Gateway Server (`agent/client.py`)
 ```bash
-pip3 install -r agent/requirements.txt
-python3 agent/client.py
+uv run python agent/client.py
 ```
 The gateway server will run at `http://localhost:8000`.
 
-### 3. Launch Frontend Web App
-
+#### 3. Launch Frontend Web App
 In a separate terminal tab:
 ```bash
 npm run dev
