@@ -28,9 +28,13 @@ export class GraphRenderer {
    */
   getColorForGroup(groupName) {
     if (!groupName) return this.groupColors.default;
-    const lower = String(groupName).toLowerCase();
-    if (this.groupColors[lower]) {
-      return this.groupColors[lower];
+    const lower = String(groupName).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Check if groupName matches any preset palette keys
+    for (const [key, val] of Object.entries(this.groupColors)) {
+      if (lower.includes(key)) {
+        return val;
+      }
     }
 
     // Deterministic HSL color calculation for arbitrary Turtle classes

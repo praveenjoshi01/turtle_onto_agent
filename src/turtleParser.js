@@ -243,12 +243,24 @@ export class TurtleManager {
     if (term.termType === 'Literal') return 'Literal Value';
     if (term.termType === 'BlankNode') return 'Blank Node';
 
-    // Check rdf:type in store
+    const rdfsLabel = 'http://www.w3.org/2000/01/rdf-schema#label';
     const rdfType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
     const typeQuads = this.combinedStore.getQuads(term, namedNode(rdfType), null, null);
+
     if (typeQuads.length > 0) {
-      const typeUri = typeQuads[0].object.value;
-      const compactType = this.compactUri(typeUri);
+      const typeTerm = typeQuads[0].object;
+
+      // 1. Try rdfs:label of the Class definition if available in store
+      const classLabels = this.combinedStore.getQuads(typeTerm, namedNode(rdfsLabel), null, null);
+      if (classLabels.length > 0 && classLabels[0].object.value) {
+        return classLabels[0].object.value;
+      }
+
+      // 2. Extract compact local short name (e.g. "org:Company" -> "Company")
+      const compactType = this.compactUri(typeTerm.value);
+      if (compactType.includes(':')) {
+        return compactType.split(':').pop();
+      }
       return compactType;
     }
 
@@ -261,10 +273,10 @@ export class TurtleManager {
       return 'Ontology Class';
     }
 
-    // Default by prefix
+    // Default by prefix short name
     const compact = this.compactUri(term.value);
     if (compact.includes(':')) {
-      return `${compact.split(':')[0]} Resource`;
+      return compact.split(':').pop();
     }
     return 'Resource';
   }

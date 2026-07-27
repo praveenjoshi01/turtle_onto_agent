@@ -229,10 +229,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     legendItemsContainer.innerHTML = legendItems.map(item => {
       const colorDef = graphRenderer.getColorForGroup(item.groupKey);
-      return `<span class="legend-item" title="${item.count} instances">
+      return `<div class="legend-item" title="${escapeHtml(item.groupKey)} (${item.count} instances)">
         <i style="background: ${colorDef.background}; border: 1px solid ${colorDef.border}"></i>
-        ${escapeHtml(item.label)} <span class="legend-count">(${item.count})</span>
-      </span>`;
+        <span class="legend-label">${escapeHtml(item.label)}</span>
+        <span class="legend-count">${item.count}</span>
+      </div>`;
     }).join('');
   }
 
