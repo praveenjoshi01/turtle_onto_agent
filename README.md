@@ -13,7 +13,14 @@
 - **RDF Search & Filter**: Filter nodes and relationships by predicate, RDF class/type, namespace prefix, or text search.
 - **Namespace Auto-Prefixing**: Automatically compacts long URIs using `@prefix` declarations for clean graph labels.
 - **Sample Ontologies Built-In**: Preloaded with sample organization and technology stack ontologies for instant demonstration.
-- **Export Capabilities**: Export graph views or parsed JSON representation.
+
+---
+
+## 🏗️ Architecture & Documentation
+
+For detailed technical architecture, data processing flow, and component design, see [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md).
+
+Developer and AI agent guidelines can be found in [AGENTS.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/AGENTS.md) and [agent.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/agent.md).
 
 ---
 
@@ -55,7 +62,8 @@ InternalOnto/
 ├── samples/             # Sample Turtle (.ttl) files for testing
 │   ├── sample_org.ttl   # Organization hierarchy ontology
 │   └── sample_tech.ttl  # Tech stack connection ontology
-├── README.md            # Project documentation
+├── README.md            # Main project documentation
+├── ARCHITECTURE.md      # Detailed system architecture & data flow
 ├── AGENTS.md            # AI agent developer context & rules
 ├── agent.md             # Developer guidelines reference
 └── package.json         # Node manifest and dependencies
@@ -67,7 +75,7 @@ InternalOnto/
 
 ### Loading Files
 - **Drag & Drop**: Drag `.ttl` files directly onto the drop zone in the visualizer interface.
-- **File Picker**: Click "Choose Turtle Files" to select one or more `.ttl` files from your computer.
+- **File Picker**: Click "Upload .ttl Files" to select one or more `.ttl` files from your computer.
 - **Sample Loader**: Use the header dropdown to load pre-built sample ontologies.
 
 ---

@@ -4,6 +4,7 @@ This document defines coding standards, architecture principles, and guidelines 
 
 ## 🏗️ Architecture Summary
 
+- **System Architecture**: Detailed architecture notes can be found in [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md).
 - **Frontend**: Vite + Vanilla HTML5/CSS3/JavaScript (ES modules).
 - **RDF Parser**: `n3` library for parsing standard W3C Turtle (`.ttl`) format, handling prefixes, blank nodes, and triples.
 - **Graph Visualization**: `vis-network` interactive force-directed graph renderer.
