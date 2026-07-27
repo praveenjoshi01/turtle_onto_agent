@@ -10,16 +10,20 @@ from openai import OpenAI
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# Retrieve OpenAI API Key supporting both open_ai and OPENAI_API_KEY keys
-api_key = os.getenv("OPENAI_API_KEY") or os.getenv("open_ai")
+# Retrieve API Keys
+openai_api_key = os.getenv("OPENAI_API_KEY") or os.getenv("open_ai")
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+
+api_key = openrouter_api_key or openai_api_key
 
 if not api_key:
-    print(f"Warning: OpenAI API Key not found in {env_path}! Ensure 'open_ai' or 'OPENAI_API_KEY' is set.", file=sys.stderr)
+    print(f"Warning: API Key not found in {env_path}! Ensure 'OPENAI_API_KEY', 'open_ai', or 'OPENROUTER_API_KEY' is set.", file=sys.stderr)
 else:
-    print("✓ OpenAI API Gateway initialized successfully.")
+    print("✓ Hermes AI Gateway initialized successfully.")
 
-# Initialize OpenAI Client
-openai_client = OpenAI(api_key=api_key) if api_key else None
+# Initialize Client (Support OpenRouter or OpenAI)
+base_url = "https://openrouter.ai/api/v1" if openrouter_api_key else None
+openai_client = OpenAI(api_key=api_key, base_url=base_url) if api_key else None
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -28,7 +32,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 def health_check():
     return jsonify({
         "status": "healthy",
-        "gateway": "Yoda AI Gateway",
+        "gateway": "Hermes AI Gateway",
         "has_api_key": bool(api_key),
         "model": "gpt-4o"
     })
@@ -37,7 +41,7 @@ def health_check():
 def chat_gateway():
     if not openai_client:
         return jsonify({
-            "error": "OpenAI API Key is missing. Please check your .env configuration."
+            "error": "API Key is missing. Please check your .env configuration."
         }), 500
 
     data = request.get_json() or {}
@@ -49,16 +53,18 @@ def chat_gateway():
     if not user_query:
         return jsonify({"error": "No query provided."}), 400
 
-    # Build prompt context for Yoda AI Agent
+    # Advanced Hermes Agent System Prompt with <thought> reasoning loop
     system_prompt = (
-        "You are Yoda, a wise AI Ontology Master and Knowledge Graph Guide. "
-        "Your task is to analyze the provided RDF Turtle (.ttl) ontologies and graph data "
-        "and answer the user's query accurately, clearly, and insightfully. "
-        "Highlight entities, relationships, classes, and properties. "
-        "Format your answer cleanly in GitHub-flavored Markdown."
+        "You are Hermes Agent, an advanced AI Knowledge Graph Reasoning Agent inspired by Nous Hermes. "
+        "Your task is to analyze RDF Turtle (.ttl) ontologies, perform step-by-step entity and relationship traversal, "
+        "and synthesize insightful answers.\n\n"
+        "Instructions:\n"
+        "1. First, outline your step-by-step reasoning inside <thought>...</thought> tags. Analyze subjects, predicates, objects, and ontology rules.\n"
+        "2. Follow with your comprehensive, structured answer formatted in GitHub-flavored Markdown.\n"
+        "3. Highlight key classes, properties, and entity relationships clearly with tables and code blocks where helpful."
     )
 
-    user_prompt = f"""User Question:
+    user_prompt = f"""User Query:
 {user_query}
 
 Active Turtle RDF Context:
@@ -78,22 +84,22 @@ Graph Summary Stats:
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.2,
-            max_tokens=1000
+            max_tokens=1200
         )
 
         reply_content = response.choices[0].message.content
         return jsonify({
             "status": "success",
-            "gateway": "Yoda AI Gateway",
+            "gateway": "Hermes AI Gateway",
             "model": requested_model,
             "reply": reply_content
         })
 
     except Exception as e:
-        print(f"Error calling OpenAI API: {e}", file=sys.stderr)
-        return jsonify({"error": f"LLM Gateway Error: {str(e)}"}), 500
+        print(f"Error calling LLM API: {e}", file=sys.stderr)
+        return jsonify({"error": f"Hermes Gateway Error: {str(e)}"}), 500
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
-    print(f"🚀 Yoda AI Gateway Server running at http://localhost:{port}")
+    print(f"🚀 Hermes AI Gateway Server running at http://localhost:{port}")
     app.run(host="0.0.0.0", port=port, debug=False)

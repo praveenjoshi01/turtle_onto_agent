@@ -484,16 +484,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (result.success) {
-      msgTextEl.innerHTML = marked.parse(result.reply);
+      msgTextEl.innerHTML = formatAgentResponse(result.reply);
       if (agentStatusIndicator) {
         agentStatusIndicator.textContent = `Connected to ${result.gateway} (${result.model})`;
         agentStatusIndicator.style.color = 'var(--primary-light)';
       }
     } else {
-      msgTextEl.innerHTML = marked.parse(`⚠️ **${result.error}**`);
+      msgTextEl.innerHTML = formatAgentResponse(`⚠️ **${result.error}**`);
     }
 
     chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  /**
+   * Format Hermes Agent response with <thought> blocks and Markdown
+   */
+  function formatAgentResponse(text) {
+    if (!text) return '';
+    let processed = text.replace(/<thought>([\s\S]*?)<\/thought>/gi, (match, thoughtBody) => {
+      return `<details class="agent-thought-block" open><summary>🧠 Hermes Agent Reasoning</summary><div class="thought-content">${escapeHtml(thoughtBody.trim())}</div></details>`;
+    });
+    return marked.parse(processed);
   }
 
   /**
@@ -503,8 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${role}`;
 
-    const author = role === 'user' ? 'You' : (role === 'system' ? 'Yoda Agent' : 'Yoda Agent');
-    const content = (role === 'assistant' || role === 'system') ? marked.parse(text) : escapeHtml(text);
+    const author = role === 'user' ? 'You' : (role === 'system' ? 'Hermes Agent' : 'Hermes Agent');
+    const content = (role === 'assistant' || role === 'system') ? formatAgentResponse(text) : escapeHtml(text);
 
     msgDiv.innerHTML = `
       <div class="msg-author">${escapeHtml(author)}</div>

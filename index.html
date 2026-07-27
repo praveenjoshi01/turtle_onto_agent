@@ -141,14 +141,14 @@
         <div id="graph-canvas" class="graph-canvas"></div>
       </main>
 
-      <!-- Right Side Panel: Yoda AI Agent Assistant -->
+      <!-- Right Side Panel: Hermes AI Agent Assistant -->
       <aside id="ai-agent-panel" class="sidebar right-sidebar ai-agent-panel">
         <div class="agent-header">
           <div class="agent-title">
-            <div class="agent-avatar">🧙‍♂️</div>
+            <div class="agent-avatar">🤖</div>
             <div>
-              <h3>Yoda AI Agent</h3>
-              <span class="agent-status" id="agent-status-indicator">Connected to Yoda Gateway (gpt-4o)</span>
+              <h3>Hermes AI Agent</h3>
+              <span class="agent-status" id="agent-status-indicator">Connected to Hermes Gateway (gpt-4o)</span>
             </div>
           </div>
           
@@ -157,6 +157,8 @@
             <select id="model-select" class="custom-select" style="width: 100%; font-size: 12px; padding: 6px 8px;">
               <option value="gpt-4o" selected>OpenAI: GPT-4o (Default)</option>
               <option value="gpt-4o-mini">OpenAI: GPT-4o-mini</option>
+              <option value="nousresearch/hermes-3-llama-3.1-405b">Nous Hermes 3 (405B)</option>
+              <option value="nousresearch/hermes-3-llama-3.1-70b">Nous Hermes 3 (70B)</option>
             </select>
           </div>
         </div>
@@ -164,8 +166,8 @@
         <!-- Chat History (scrolls starting right beneath model selector) -->
         <div id="chat-messages" class="chat-messages">
           <div class="chat-message system">
-            <div class="msg-author">Yoda Agent</div>
-            <div class="msg-text">Greetings! Yoda AI Agent I am. Analyze your active RDF Turtle (.ttl) ontologies I will using GPT-4o. Ask your questions, you may!</div>
+            <div class="msg-author">Hermes Agent</div>
+            <div class="msg-text">Hello! I am your **Hermes AI Agent**, an advanced knowledge graph reasoning assistant powered by Nous Hermes intelligence. Ask any question about your Turtle (.ttl) ontology!</div>
           </div>
         </div>
 
@@ -176,7 +178,7 @@
           </div>
 
           <div class="chat-input-container">
-            <textarea id="chat-input" placeholder="Ask Yoda about your ontology..." rows="2"></textarea>
+            <textarea id="chat-input" placeholder="Ask Hermes about your ontology..." rows="2"></textarea>
             <button id="btn-send-chat" class="btn primary-btn send-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
