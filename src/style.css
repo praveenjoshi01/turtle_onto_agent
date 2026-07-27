@@ -581,11 +581,14 @@ body, html {
 .ai-agent-panel {
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 80px);
+  overflow: hidden;
 }
 
 .agent-header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .agent-title {
@@ -618,38 +621,51 @@ body, html {
   display: block;
 }
 
-.prompt-chips {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.chip {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  font-size: 11px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.chip:hover {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: var(--border-highlight);
-  color: var(--primary-light);
-}
-
 .chat-messages {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px 4px;
-  max-height: calc(100vh - 300px);
+  padding: 12px 4px;
+  max-height: none;
+}
+
+.chat-bottom-container {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prompt-chips.bottom-chips {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.prompt-chips.bottom-chips .chip {
+  flex: 1;
+  min-width: 0;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid var(--border-color);
+  color: var(--primary-light);
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prompt-chips.bottom-chips .chip:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--border-highlight);
 }
 
 .chat-message {
@@ -698,9 +714,6 @@ body, html {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-top: auto;
-  border-top: 1px solid var(--border-color);
-  padding-top: 12px;
 }
 
 #chat-input {

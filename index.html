@@ -161,14 +161,7 @@
           </div>
         </div>
 
-        <!-- Quick Prompt Chips -->
-        <div class="prompt-chips" style="margin-top: 10px;">
-          <button class="chip" data-prompt="Summarize the structure of this ontology.">Summarize Ontology</button>
-          <button class="chip" data-prompt="Who manages each department?">Who manages departments?</button>
-          <button class="chip" data-prompt="What projects are active and what technology stack do they use?">Projects & Tech Stack</button>
-        </div>
-
-        <!-- Chat History -->
+        <!-- Chat History (scrolls starting right beneath model selector) -->
         <div id="chat-messages" class="chat-messages">
           <div class="chat-message system">
             <div class="msg-author">Yoda Agent</div>
@@ -176,12 +169,18 @@
           </div>
         </div>
 
-        <!-- Chat Input -->
-        <div class="chat-input-container">
-          <textarea id="chat-input" placeholder="Ask Yoda about your ontology..." rows="2"></textarea>
-          <button id="btn-send-chat" class="btn primary-btn send-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </button>
+        <!-- Chat Bottom Container: Recommended Questions (Max 2) + Input Box -->
+        <div class="chat-bottom-container">
+          <div id="prompt-chips" class="prompt-chips bottom-chips">
+            <!-- Dynamically populated with max 2 recommended questions -->
+          </div>
+
+          <div class="chat-input-container">
+            <textarea id="chat-input" placeholder="Ask Yoda about your ontology..." rows="2"></textarea>
+            <button id="btn-send-chat" class="btn primary-btn send-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
         </div>
       </aside>
 

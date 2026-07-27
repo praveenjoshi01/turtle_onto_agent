@@ -45,9 +45,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const sendChatBtn = document.getElementById('btn-send-chat');
-  const promptChips = document.querySelectorAll('.chip');
+  const promptChipsContainer = document.getElementById('prompt-chips');
   const modelSelect = document.getElementById('model-select');
   const agentStatusIndicator = document.getElementById('agent-status-indicator');
+
+  // Recommended Questions Pool (Max 2 displayed above chat input at bottom)
+  const recommendationPool = [
+    { label: "Summarize Ontology", prompt: "Summarize the structure of this ontology." },
+    { label: "Who manages departments?", prompt: "Who manages each department?" },
+    { label: "Projects & Tech Stack", prompt: "What projects are active and what technology stack do they use?" },
+    { label: "Classes & Predicates", prompt: "List all RDF classes and relationship predicates in this graph." }
+  ];
+  let currentRecIndex = 0;
+
+  function renderRecommendedChips() {
+    if (!promptChipsContainer) return;
+    promptChipsContainer.innerHTML = '';
+
+    const recs = [
+      recommendationPool[currentRecIndex],
+      recommendationPool[(currentRecIndex + 1) % recommendationPool.length]
+    ];
+
+    recs.forEach(rec => {
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.textContent = rec.label;
+      btn.title = rec.prompt;
+      btn.addEventListener('click', () => {
+        chatInput.value = rec.prompt;
+        handleUserChatMessage();
+      });
+      promptChipsContainer.appendChild(btn);
+    });
+  }
+
+  function rotateRecommendedChips() {
+    currentRecIndex = (currentRecIndex + 2) % recommendationPool.length;
+    renderRecommendedChips();
+  }
+
+  renderRecommendedChips();
 
   // Check Gateway Health & Model Status
   async function updateGatewayStatus() {
@@ -131,16 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       handleUserChatMessage();
     }
-  });
-
-  promptChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      const promptText = chip.dataset.prompt;
-      if (promptText) {
-        chatInput.value = promptText;
-        handleUserChatMessage();
-      }
-    });
   });
 
   /**
@@ -420,9 +448,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    // Append user message to UI
+    // Append user message to UI & rotate recommended chips
     appendChatMessage('user', text);
     chatInput.value = '';
+    rotateRecommendedChips();
 
     // Extract active Turtle content & triples summary
     let combinedTurtleText = '';
