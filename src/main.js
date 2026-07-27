@@ -461,14 +461,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       try {
-        response = await fetch('/api/chat', {
+        response = await fetch('http://localhost:8000/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: payload
         });
       } catch (err1) {
-        // Direct localhost:8000 fallback
-        response = await fetch('http://localhost:8000/api/chat', {
+        response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: payload
@@ -481,12 +480,13 @@ document.addEventListener('DOMContentLoaded', () => {
         msgTextEl.textContent = resData.reply;
         if (resData.gateway && resData.model) {
           agentStatusIndicator.textContent = `Connected to ${resData.gateway} (${resData.model})`;
+          agentStatusIndicator.style.color = 'var(--primary-light)';
         }
       } else {
-        msgTextEl.textContent = `⚠️ Gateway Error: ${resData.error || 'Unable to connect to client.py API gateway server.'}`;
+        msgTextEl.textContent = `⚠️ LLM Error: ${resData.error || 'Server returned invalid response.'}`;
       }
     } catch (err) {
-      msgTextEl.textContent = `⚠️ Gateway Connection Failed. Please make sure python gateway server (client.py) is running on port 8000.\n\nRun command: python3 client.py`;
+      msgTextEl.textContent = `⚠️ Gateway Connection Error: ${err.message}. Please verify python3 client.py is running on port 8000.`;
     }
 
     chatMessages.scrollTop = chatMessages.scrollHeight;

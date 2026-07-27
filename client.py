@@ -22,7 +22,7 @@ else:
 openai_client = OpenAI(api_key=api_key) if api_key else None
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route("/api/health", methods=["GET"])
 def health_check():
