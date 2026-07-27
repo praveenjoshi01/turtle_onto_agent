@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
       openInspectorForEdge(edgeObj);
     },
     onDeselect: () => {
-      // Optional: don't immediately close panel on click away
+      // Optional: keep inspector active or clear
     }
   });
 
@@ -39,6 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeInspectorBtn = document.getElementById('btn-close-inspector');
   const statNodes = document.getElementById('stat-nodes');
   const statTriples = document.getElementById('stat-triples');
+
+  // AI Agent Elements
+  const chatMessages = document.getElementById('chat-messages');
+  const chatInput = document.getElementById('chat-input');
+  const sendChatBtn = document.getElementById('btn-send-chat');
+  const promptChips = document.querySelectorAll('.chip');
 
   // Event Listeners
   uploadBtnTrigger.addEventListener('click', () => fileInput.click());
@@ -90,8 +96,30 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   fitBtn.addEventListener('click', () => graphRenderer.fitViewport());
-  closeInspectorBtn.addEventListener('click', () => {
-    inspectorPanel.classList.add('closed');
+  
+  if (closeInspectorBtn) {
+    closeInspectorBtn.addEventListener('click', () => {
+      resetInspector();
+    });
+  }
+
+  // AI Agent Event Handlers
+  sendChatBtn.addEventListener('click', handleUserChatMessage);
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleUserChatMessage();
+    }
+  });
+
+  promptChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const promptText = chip.dataset.prompt;
+      if (promptText) {
+        chatInput.value = promptText;
+        handleUserChatMessage();
+      }
+    });
   });
 
   /**
@@ -273,13 +301,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Update Inspector Panel for selected Node
+   * Reset Left Entity Inspector
+   */
+  function resetInspector() {
+    inspectorContent.innerHTML = `
+      <div class="empty-inspector">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <p>Click any node or edge on the canvas to inspect RDF statements on the left.</p>
+      </div>
+    `;
+  }
+
+  /**
+   * Update Left Inspector Panel for selected Node
    */
   function openInspectorForNode(nodeId) {
     const details = turtleManager.getNodeDetails(nodeId);
     if (!details) return;
-
-    inspectorPanel.classList.remove('closed');
 
     let outgoingHtml = details.outgoing.map(st => `
       <div class="statement-item">
@@ -303,14 +341,14 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <div class="statement-section">
-          <h4>Outgoing Relationships (${details.outgoing.length})</h4>
+          <h4>Outgoing (${details.outgoing.length})</h4>
           <div class="statement-list">
             ${outgoingHtml || '<div class="empty-state">No outgoing edges</div>'}
           </div>
         </div>
 
         <div class="statement-section">
-          <h4>Incoming Relationships (${details.incoming.length})</h4>
+          <h4>Incoming (${details.incoming.length})</h4>
           <div class="statement-list">
             ${incomingHtml || '<div class="empty-state">No incoming edges</div>'}
           </div>
@@ -320,11 +358,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Update Inspector Panel for selected Edge
+   * Update Left Inspector Panel for selected Edge
    */
   function openInspectorForEdge(edgeObj) {
-    inspectorPanel.classList.remove('closed');
-
     const subjComp = turtleManager.compactUri(edgeObj.subjectUri);
     const objComp = turtleManager.compactUri(edgeObj.objectUri);
 
@@ -336,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <div class="statement-section">
-          <h4>Relationship Statement</h4>
+          <h4>Statement Details</h4>
           <div class="statement-list">
             <div class="statement-item">
               <div class="statement-pred">Subject</div>
@@ -354,6 +390,77 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Handle Hermes AI Chat Submission
+   */
+  async function handleUserChatMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    // Append user message to UI
+    appendChatMessage('user', text);
+    chatInput.value = '';
+
+    // Extract active Turtle content & triples summary
+    let combinedTurtleText = '';
+    turtleManager.activeFileIds.forEach(id => {
+      const file = turtleManager.files.get(id);
+      if (file) {
+        combinedTurtleText += `# --- File: ${file.name} ---\n` + file.content + '\n\n';
+      }
+    });
+
+    const graphData = turtleManager.getGraphData();
+    const triplesSummary = `Active Files: ${turtleManager.activeFileIds.size}, Nodes: ${graphData.nodes.length}, Triples: ${graphData.tripleCount}`;
+
+    // Create temporary Assistant response element
+    const assistantMsgEl = appendChatMessage('assistant', 'Thinking...');
+    const msgTextEl = assistantMsgEl.querySelector('.msg-text');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: text,
+          turtle_content: combinedTurtleText,
+          triples_summary: triplesSummary
+        })
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.reply) {
+        msgTextEl.textContent = resData.reply;
+      } else {
+        msgTextEl.textContent = `⚠️ Gateway Error: ${resData.error || 'Unable to connect to client.py API gateway server.'}`;
+      }
+    } catch (err) {
+      msgTextEl.textContent = `⚠️ Gateway Connection Failed. Please make sure python gateway server (client.py) is running on port 8000.\n\nRun command: python3 client.py`;
+    }
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  /**
+   * Append Chat Message to UI container
+   */
+  function appendChatMessage(role, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${role}`;
+
+    const author = role === 'user' ? 'You' : (role === 'system' ? 'Hermes Agent' : 'Hermes Agent');
+
+    msgDiv.innerHTML = `
+      <div class="msg-author">${escapeHtml(author)}</div>
+      <div class="msg-text">${escapeHtml(text)}</div>
+    `;
+
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return msgDiv;
   }
 
   function escapeHtml(str) {
