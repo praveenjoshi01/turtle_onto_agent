@@ -1,23 +1,56 @@
-# Agent & Developer Guidelines - InternalOnto
+# Agent Developer Guidelines
 
-This document defines coding standards, architecture principles, and guidelines for AI agents and developers working on `InternalOnto`.
+This document provides instructions and developer workflows for AI agents working in the **InternalOnto** repository.
 
-## 🏗️ Architecture Summary
+---
 
-- **System Architecture**: Detailed architecture notes and Mermaid system diagrams can be found in [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md).
-- **Frontend**: Vite + Vanilla HTML5/CSS3/JavaScript (ES modules).
-- **Python Gateway (`client.py`)**: Flask API gateway server running on port `8000`, using `gpt-4o` via OpenAI API.
-- **RDF Parser**: `n3` library for parsing standard W3C Turtle (`.ttl`) format.
-- **Graph Visualization**: `vis-network` interactive force-directed & tree layout renderer.
+## 🚨 Critical Security Directive
 
-## 🛠️ Code Conventions
+- **OpenAI API Key**: Stored in root `.env` as `open_ai=sk-proj-...` or `OPENAI_API_KEY=sk-proj-...`.
+- **NEVER Commit Credentials**: The `.env` file MUST remain in `.gitignore`. NEVER add, commit, log, or push the contents of `.env` or raw secret keys to Git.
 
-1. **Vanilla JS Modular Architecture**: Keep code decoupled into logical modules (`turtleParser.js`, `graphRenderer.js`, `main.js`).
-2. **Python Gateway (`client.py`)**: All LLM interactions pass through `client.py` on port `8000`. Credentials (`open_ai` or `OPENAI_API_KEY`) must strictly remain in `.env` (never committed to git).
-3. **Architecture Diagrams**: Always maintain Mermaid diagrams (` ```mermaid `) in [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md) instead of plain ASCII text diagrams.
-4. **Design System**: Use modern CSS with dark theme, glassmorphism containers, left-side entity inspector, and right-side Hermes AI chat panel.
+---
 
-## 🧪 Testing & Verification
+## 📁 Repository Organization
 
-- Run `npm run build` to verify clean frontend compilation before committing code.
-- Run `python3 client.py` to verify API gateway server execution.
+```
+InternalOnto/
+├── agent/               # Dedicated AI Agent components directory
+│   ├── client.py        # Python LLM API Gateway server (Yoda AI Gateway)
+│   ├── requirements.txt # Python requirements manifest
+│   └── agentClient.js   # Frontend agent communication module
+├── index.html           # Main HTML dashboard (Left Inspector + Right Yoda AI)
+├── vite.config.js       # Vite dev server & proxy setup (/api -> http://localhost:8000)
+├── src/
+│   ├── main.js          # Main application orchestrator
+│   ├── style.css        # Visual design system
+│   ├── turtleParser.js  # N3 RDF parser and store manager
+│   └── graphRenderer.js # Vis-network 2D & Tree graph renderer
+├── samples/             # Sample RDF Turtle ontologies
+├── ARCHITECTURE.md      # System architecture & Mermaid diagrams
+└── README.md            # Main README
+```
+
+---
+
+## 🛠️ Execution & Verification Commands
+
+### 1. Python Gateway Server
+```bash
+pip3 install -r agent/requirements.txt
+python3 agent/client.py
+```
+- Server endpoint: `http://localhost:8000`
+- Health check: `curl -s http://localhost:8000/api/health`
+
+### 2. Frontend Development Server
+```bash
+npm run dev
+```
+- Web App URL: `http://localhost:5173`
+
+### 3. Production Build
+```bash
+npm run build
+```
+- Verifies zero JS/CSS compilation errors.

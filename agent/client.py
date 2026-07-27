@@ -6,15 +6,15 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# Load environment variables from .env
-env_path = Path(__file__).parent / ".env"
+# Load environment variables from root .env
+env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # Retrieve OpenAI API Key supporting both open_ai and OPENAI_API_KEY keys
 api_key = os.getenv("OPENAI_API_KEY") or os.getenv("open_ai")
 
 if not api_key:
-    print("Warning: OpenAI API Key not found in .env file! Ensure 'open_ai' or 'OPENAI_API_KEY' is set.", file=sys.stderr)
+    print(f"Warning: OpenAI API Key not found in {env_path}! Ensure 'open_ai' or 'OPENAI_API_KEY' is set.", file=sys.stderr)
 else:
     print("✓ OpenAI API Gateway initialized successfully.")
 
@@ -95,5 +95,5 @@ Graph Summary Stats:
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
-    print(f"🚀 LLM Gateway Server running at http://localhost:{port}")
+    print(f"🚀 Yoda AI Gateway Server running at http://localhost:{port}")
     app.run(host="0.0.0.0", port=port, debug=False)

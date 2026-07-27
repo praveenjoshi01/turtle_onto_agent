@@ -1,5 +1,6 @@
 import { TurtleManager } from './turtleParser.js';
 import { GraphRenderer } from './graphRenderer.js';
+import { checkGatewayHealth as checkHealth, sendAgentQuery } from '../agent/agentClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const turtleManager = new TurtleManager();
@@ -49,32 +50,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const agentStatusIndicator = document.getElementById('agent-status-indicator');
 
   // Check Gateway Health & Model Status
-  checkGatewayHealth();
+  async function updateGatewayStatus() {
+    const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
+    const status = await checkHealth(selectedModel);
+    if (agentStatusIndicator) {
+      agentStatusIndicator.textContent = status.text;
+      agentStatusIndicator.style.color = status.healthy ? 'var(--primary-light)' : 'var(--danger)';
+    }
+  }
+
+  updateGatewayStatus();
 
   if (modelSelect) {
     modelSelect.addEventListener('change', () => {
-      checkGatewayHealth();
+      updateGatewayStatus();
     });
-  }
-
-  async function checkGatewayHealth() {
-    const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
-    try {
-      let res;
-      try {
-        res = await fetch('/api/health');
-      } catch (e1) {
-        res = await fetch('http://localhost:8000/api/health');
-      }
-      const data = await res.json();
-      if (data.status === 'healthy') {
-        agentStatusIndicator.textContent = `Connected to ${data.gateway} (${selectedModel})`;
-        agentStatusIndicator.style.color = 'var(--primary-light)';
-      }
-    } catch (err) {
-      agentStatusIndicator.textContent = `Offline: client.py on port 8000 (${selectedModel})`;
-      agentStatusIndicator.style.color = 'var(--danger)';
-    }
   }
 
   // Event Listeners
@@ -451,42 +441,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const assistantMsgEl = appendChatMessage('assistant', 'Consulting the Force...');
     const msgTextEl = assistantMsgEl.querySelector('.msg-text');
 
-    let response;
-    const payload = JSON.stringify({
+    const result = await sendAgentQuery({
       query: text,
       model: selectedModel,
-      turtle_content: combinedTurtleText,
-      triples_summary: triplesSummary
+      turtleContent: combinedTurtleText,
+      triplesSummary: triplesSummary
     });
 
-    try {
-      try {
-        response = await fetch('http://localhost:8000/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: payload
-        });
-      } catch (err1) {
-        response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: payload
-        });
+    if (result.success) {
+      msgTextEl.textContent = result.reply;
+      if (agentStatusIndicator) {
+        agentStatusIndicator.textContent = `Connected to ${result.gateway} (${result.model})`;
+        agentStatusIndicator.style.color = 'var(--primary-light)';
       }
-
-      const resData = await response.json();
-
-      if (response.ok && resData.reply) {
-        msgTextEl.textContent = resData.reply;
-        if (resData.gateway && resData.model) {
-          agentStatusIndicator.textContent = `Connected to ${resData.gateway} (${resData.model})`;
-          agentStatusIndicator.style.color = 'var(--primary-light)';
-        }
-      } else {
-        msgTextEl.textContent = `⚠️ LLM Error: ${resData.error || 'Server returned invalid response.'}`;
-      }
-    } catch (err) {
-      msgTextEl.textContent = `⚠️ Gateway Connection Error: ${err.message}. Please verify python3 client.py is running on port 8000.`;
+    } else {
+      msgTextEl.textContent = `⚠️ ${result.error}`;
     }
 
     chatMessages.scrollTop = chatMessages.scrollHeight;
