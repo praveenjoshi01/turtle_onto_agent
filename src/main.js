@@ -1,6 +1,6 @@
 import { TurtleManager } from './turtleParser.js';
 import { GraphRenderer } from './graphRenderer.js';
-import { checkGatewayHealth as checkHealth, sendAgentQuery } from '../agent/agentClient.js';
+import { checkGatewayHealth as checkHealth, sendAgentQuery, saveApiKey } from '../agent/agentClient.js';
 import { marked } from 'marked';
 
 marked.setOptions({
@@ -47,6 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const statNodes = document.getElementById('stat-nodes');
   const statTriples = document.getElementById('stat-triples');
 
+  // API Key Modal Elements
+  const keyConfigBtn = document.getElementById('btn-key-config');
+  const keyStatusText = document.getElementById('key-status-text');
+  const apiKeyModal = document.getElementById('api-key-modal');
+  const apiKeyInput = document.getElementById('api-key-input');
+  const saveKeyBtn = document.getElementById('btn-save-key-modal');
+  const cancelKeyBtn = document.getElementById('btn-cancel-key-modal');
+  const closeKeyModalBtn = document.getElementById('btn-close-key-modal');
+  const keyModalMsg = document.getElementById('key-modal-msg');
+
   // AI Agent Elements
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
@@ -54,6 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const promptChipsContainer = document.getElementById('prompt-chips');
   const modelSelect = document.getElementById('model-select');
   const agentStatusIndicator = document.getElementById('agent-status-indicator');
+
+  let currentHasApiKey = false;
 
   // Recommended Questions Pool (Max 2 displayed above chat input at bottom)
   const recommendationPool = [
@@ -97,9 +109,21 @@ document.addEventListener('DOMContentLoaded', () => {
   async function updateGatewayStatus() {
     const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
     const status = await checkHealth(selectedModel);
+    currentHasApiKey = status.hasApiKey;
+
     if (agentStatusIndicator) {
       agentStatusIndicator.textContent = status.text;
       agentStatusIndicator.style.color = status.healthy ? 'var(--primary-light)' : 'var(--danger)';
+    }
+
+    if (keyConfigBtn && keyStatusText) {
+      if (status.hasApiKey) {
+        keyConfigBtn.classList.remove('missing');
+        keyStatusText.textContent = 'API Key Configured';
+      } else {
+        keyConfigBtn.classList.add('missing');
+        keyStatusText.textContent = '🔑 Connect OpenAI API';
+      }
     }
   }
 
@@ -108,6 +132,59 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modelSelect) {
     modelSelect.addEventListener('change', () => {
       updateGatewayStatus();
+    });
+  }
+
+  if (keyConfigBtn) {
+    keyConfigBtn.addEventListener('click', () => {
+      openKeyModal();
+    });
+  }
+
+  function openKeyModal() {
+    if (apiKeyModal) {
+      apiKeyInput.value = '';
+      keyModalMsg.style.display = 'none';
+      apiKeyModal.showModal();
+    }
+  }
+
+  function closeKeyModal() {
+    if (apiKeyModal) {
+      apiKeyModal.close();
+    }
+  }
+
+  if (cancelKeyBtn) cancelKeyBtn.addEventListener('click', closeKeyModal);
+  if (closeKeyModalBtn) closeKeyModalBtn.addEventListener('click', closeKeyModal);
+
+  if (saveKeyBtn) {
+    saveKeyBtn.addEventListener('click', async () => {
+      const keyVal = apiKeyInput.value.trim();
+      if (!keyVal) {
+        keyModalMsg.style.display = 'block';
+        keyModalMsg.style.color = 'var(--danger)';
+        keyModalMsg.textContent = 'Please enter a valid API Key.';
+        return;
+      }
+
+      saveKeyBtn.textContent = 'Saving...';
+      const result = await saveApiKey(keyVal);
+      saveKeyBtn.textContent = 'Save API Key';
+
+      if (result.success) {
+        keyModalMsg.style.display = 'block';
+        keyModalMsg.style.color = 'var(--primary-light)';
+        keyModalMsg.textContent = result.message;
+        setTimeout(() => {
+          closeKeyModal();
+          updateGatewayStatus();
+        }, 800);
+      } else {
+        keyModalMsg.style.display = 'block';
+        keyModalMsg.style.color = 'var(--danger)';
+        keyModalMsg.textContent = result.error;
+      }
     });
   }
 
@@ -453,6 +530,14 @@ document.addEventListener('DOMContentLoaded', () => {
   async function handleUserChatMessage() {
     const text = chatInput.value.trim();
     if (!text) return;
+
+    if (!currentHasApiKey) {
+      openKeyModal();
+      keyModalMsg.style.display = 'block';
+      keyModalMsg.style.color = 'var(--danger)';
+      keyModalMsg.textContent = 'Please enter your OpenAI API key to start chatting.';
+      return;
+    }
 
     // Append user message to UI & rotate recommended chips
     appendChatMessage('user', text);

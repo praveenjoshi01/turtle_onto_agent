@@ -37,6 +37,42 @@ def health_check():
         "model": "gpt-4o"
     })
 
+@app.route("/api/set-key", methods=["POST"])
+def set_api_key():
+    global api_key, openai_client
+    data = request.get_json() or {}
+    new_key = data.get("api_key", "").strip()
+
+    if not new_key:
+        return jsonify({"error": "No API Key provided."}), 400
+
+    api_key = new_key
+    base_url = "https://openrouter.ai/api/v1" if os.getenv("OPENROUTER_API_KEY") else None
+    openai_client = OpenAI(api_key=api_key, base_url=base_url)
+
+    # Persist to .env if present or create
+    try:
+        if env_path.exists():
+            content = env_path.read_text()
+            if "OPENAI_API_KEY=" in content:
+                lines = [f"OPENAI_API_KEY={new_key}" if l.startswith("OPENAI_API_KEY=") else l for l in content.splitlines()]
+                env_path.write_text("\n".join(lines))
+            elif "open_ai=" in content:
+                lines = [f"open_ai={new_key}" if l.startswith("open_ai=") else l for l in content.splitlines()]
+                env_path.write_text("\n".join(lines))
+            else:
+                env_path.write_text(content.strip() + f"\nOPENAI_API_KEY={new_key}\n")
+        else:
+            env_path.write_text(f"OPENAI_API_KEY={new_key}\n")
+    except Exception as e:
+        print(f"Notice: Could not persist key to .env file: {e}", file=sys.stderr)
+
+    return jsonify({
+        "status": "success",
+        "has_api_key": True,
+        "message": "OpenAI API Key configured successfully!"
+    })
+
 @app.route("/api/chat", methods=["POST"])
 def chat_gateway():
     if not openai_client:

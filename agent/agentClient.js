@@ -18,17 +18,50 @@ export async function checkGatewayHealth(selectedModel = 'gpt-4o') {
     if (data.status === 'healthy') {
       return {
         healthy: true,
-        gateway: data.gateway || 'Yoda AI Gateway',
+        hasApiKey: Boolean(data.has_api_key),
+        gateway: data.gateway || 'Hermes AI Gateway',
         model: selectedModel,
-        text: `Connected to ${data.gateway || 'Yoda AI Gateway'} (${selectedModel})`
+        text: `Connected to ${data.gateway || 'Hermes AI Gateway'} (${selectedModel})`
       };
     }
-    return { healthy: false, text: `Gateway reported unhealthy status` };
+    return { healthy: false, hasApiKey: false, text: `Gateway reported unhealthy status` };
   } catch (err) {
     return {
       healthy: false,
+      hasApiKey: false,
       text: `Offline: python3 agent/client.py on port 8000 (${selectedModel})`
     };
+  }
+}
+
+/**
+ * Configure or update OpenAI API Key at runtime
+ */
+export async function saveApiKey(apiKey) {
+  const payload = JSON.stringify({ api_key: apiKey });
+  let response;
+  try {
+    try {
+      response = await fetch('http://localhost:8000/api/set-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload
+      });
+    } catch (err1) {
+      response = await fetch('/api/set-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload
+      });
+    }
+
+    const resData = await response.json();
+    if (response.ok && resData.status === 'success') {
+      return { success: true, message: resData.message };
+    }
+    return { success: false, error: resData.error || 'Failed to update API key.' };
+  } catch (err) {
+    return { success: false, error: `Connection failed: ${err.message}` };
   }
 }
 
