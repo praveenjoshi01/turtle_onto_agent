@@ -1,25 +1,25 @@
-# Agent Developer Guidelines
+# OntoSphere AI - Developer & Agent Guidelines
 
-This document provides instructions and developer workflows for AI agents working in the **InternalOnto** repository.
+This document provides developer guidelines and operational instructions for AI agents working in the **OntoSphere AI** repository.
 
 ---
 
 ## 🚨 Critical Security Directive
 
 - **OpenAI API Key**: Stored in root `.env` as `open_ai=sk-proj-...` or `OPENAI_API_KEY=sk-proj-...`.
-- **NEVER Commit Credentials**: The `.env` file MUST remain in `.gitignore`. NEVER add, commit, log, or push the contents of `.env` or raw secret keys to Git.
+- **NEVER Commit Credentials**: The `.env` file MUST remain in `.gitignore`. NEVER add, commit, log, or push secret keys to Git.
 
 ---
 
 ## 📁 Repository Organization
 
 ```
-InternalOnto/
+OntoSphere/
 ├── agent/               # Dedicated AI Agent components directory
-│   ├── client.py        # Python LLM API Gateway server (Yoda AI Gateway)
+│   ├── client.py        # Python LLM API Gateway server (Onto Agent Gateway)
 │   ├── requirements.txt # Python requirements manifest
 │   └── agentClient.js   # Frontend agent communication module
-├── index.html           # Main HTML dashboard (Left Inspector + Right Yoda AI)
+├── index.html           # Main HTML dashboard (Left Inspector + Right Onto Agent)
 ├── vite.config.js       # Vite dev server & proxy setup (/api -> http://localhost:8000)
 ├── src/
 │   ├── main.js          # Main application orchestrator

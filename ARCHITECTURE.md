@@ -1,12 +1,12 @@
-# InternalOnto - System Architecture
+# OntoSphere AI - System Architecture
 
-This document provides a detailed technical architecture overview of **InternalOnto**, an interactive, browser-based multi-file RDF Turtle (`.ttl`) graph visualizer, ontology explorer, and **Yoda AI Agent** assistant powered by `agent/client.py` (`gpt-4o`).
+This document provides a detailed technical architecture overview of **OntoSphere AI**, an interactive, browser-based multi-file RDF Turtle (`.ttl`) graph visualizer, ontology explorer, and **Onto Agent** assistant powered by `agent/client.py` (`gpt-4o`).
 
 ---
 
 ## 🏗️ High-Level System Architecture
 
-InternalOnto follows a modular, decoupled Single Page Application (SPA) architecture built with **Vite**, **Vanilla ES Modules**, and a dedicated **Python Gateway (`agent/client.py`)**.
+OntoSphere AI follows a modular, decoupled Single Page Application (SPA) architecture built with **Vite**, **Vanilla ES Modules**, and a dedicated **Python Gateway (`agent/client.py`)**.
 
 ```mermaid
 graph TD
@@ -14,7 +14,7 @@ graph TD
         Header["App Header & Sample Selector"]
         DropZone["Drag & Drop Zone & File Upload"]
         LeftSidebar["Left Sidebar (Controls, Loaded Files, Dynamic Legend, Entity Inspector)"]
-        RightSidebar["Right Sidebar (Yoda AI Agent Panel)"]
+        RightSidebar["Right Sidebar (Onto Agent Panel)"]
     end
 
     subgraph Controller ["Application Orchestrator"]
@@ -74,9 +74,9 @@ graph TD
 
 ### 1. `agent/` Directory Components
 The dedicated module containing all AI Agent gateway and client logic:
-- **`agent/client.py`**: Python Flask API server running on port `8000`. Loads root `.env` (`Path(__file__).parent.parent / ".env"`). Exposes `GET /api/health` and `POST /api/chat` for `gpt-4o`.
+- **`agent/client.py`**: Python Flask API server running on port `8000`. Loads root `.env` (`Path(__file__).parent.parent / ".env"`). Exposes `GET /api/health`, `POST /api/set-key`, and `POST /api/chat` for `gpt-4o`.
 - **`agent/requirements.txt`**: Python requirement manifest (`openai`, `python-dotenv`, `flask`, `flask-cors`).
-- **`agent/agentClient.js`**: Frontend JavaScript module encapsulating gateway health checks (`checkGatewayHealth`) and chat requests (`sendAgentQuery`).
+- **`agent/agentClient.js`**: Frontend JavaScript module encapsulating gateway health checks (`checkGatewayHealth`), key updates (`saveApiKey`), and chat requests (`sendAgentQuery`).
 
 ### 2. `TurtleManager` (`src/turtleParser.js`)
 The data engine responsible for ingestion, parsing, RDF storage, and querying.
@@ -90,4 +90,4 @@ The visualization renderer wrapping `vis-network`.
 - **Semantic Color Palette & HSL Engine**: Categorizes nodes based on RDF class types with deterministic color generation for custom classes.
 
 ### 4. Application Orchestrator (`src/main.js`)
-The event mediator connecting user inputs, graph canvas events, left Entity Inspector updates, and right-side Yoda AI Agent chat queries.
+The event mediator connecting user inputs, graph canvas events, left Entity Inspector updates, and right-side Onto Agent chat queries.

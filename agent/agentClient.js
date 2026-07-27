@@ -19,9 +19,9 @@ export async function checkGatewayHealth(selectedModel = 'gpt-4o') {
       return {
         healthy: true,
         hasApiKey: Boolean(data.has_api_key),
-        gateway: data.gateway || 'Hermes AI Gateway',
+        gateway: data.gateway || 'Onto Agent Gateway',
         model: selectedModel,
-        text: `Connected to ${data.gateway || 'Hermes AI Gateway'} (${selectedModel})`
+        text: `Connected to ${data.gateway || 'Onto Agent Gateway'} (${selectedModel})`
       };
     }
     return { healthy: false, hasApiKey: false, text: `Gateway reported unhealthy status` };

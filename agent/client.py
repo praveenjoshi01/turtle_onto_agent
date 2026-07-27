@@ -32,7 +32,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 def health_check():
     return jsonify({
         "status": "healthy",
-        "gateway": "Hermes AI Gateway",
+        "gateway": "Onto Agent Gateway",
         "has_api_key": bool(api_key),
         "model": "gpt-4o"
     })
@@ -126,7 +126,7 @@ Graph Summary Stats:
         reply_content = response.choices[0].message.content
         return jsonify({
             "status": "success",
-            "gateway": "Hermes AI Gateway",
+            "gateway": "Onto Agent Gateway",
             "model": requested_model,
             "reply": reply_content
         })

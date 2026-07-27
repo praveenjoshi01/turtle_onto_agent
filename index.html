@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InternalOnto - Multi-Turtle RDF Visualizer & Hermes Agent</title>
+  <title>OntoSphere AI - Multi-Turtle RDF Visualizer & Onto Agent</title>
   <link rel="stylesheet" href="./src/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,10 +15,10 @@
     <!-- Top Header -->
     <header class="app-header">
       <div class="brand">
-        <div class="logo-icon">🐢</div>
+        <div class="logo-icon">🌐</div>
         <div class="brand-text">
-          <h1>InternalOnto</h1>
-          <span class="badge">Multi-Turtle Visualizer + Hermes Agent</span>
+          <h1>OntoSphere AI</h1>
+          <span class="badge">Multi-Turtle Visualizer + Onto Agent</span>
         </div>
       </div>
 
@@ -146,14 +146,14 @@
         <div id="graph-canvas" class="graph-canvas"></div>
       </main>
 
-      <!-- Right Side Panel: Hermes AI Agent Assistant -->
+      <!-- Right Side Panel: Onto Agent Assistant -->
       <aside id="ai-agent-panel" class="sidebar right-sidebar ai-agent-panel">
         <div class="agent-header">
           <div class="agent-title">
-            <div class="agent-avatar">🤖</div>
+            <div class="agent-avatar">🐢</div>
             <div>
-              <h3>Hermes AI Agent</h3>
-              <span class="agent-status" id="agent-status-indicator">Connected to Hermes Gateway (gpt-4o)</span>
+              <h3>Onto Agent</h3>
+              <span class="agent-status" id="agent-status-indicator">Connected to Onto Gateway (gpt-4o)</span>
             </div>
           </div>
           
@@ -171,8 +171,8 @@
         <!-- Chat History (scrolls starting right beneath model selector) -->
         <div id="chat-messages" class="chat-messages">
           <div class="chat-message system">
-            <div class="msg-author">Hermes Agent</div>
-            <div class="msg-text markdown-body">Hello! I am your <strong>Hermes AI Agent</strong>, an advanced knowledge graph reasoning assistant powered by Nous Hermes intelligence. Ask any question about your Turtle (.ttl) ontology!</div>
+            <div class="msg-author">Onto Agent</div>
+            <div class="msg-text markdown-body">Hello! I am your <strong>Onto Agent</strong>, an advanced knowledge graph reasoning assistant powered by your intelligence. Ask any question about your Turtle (.ttl) ontology!</div>
           </div>
         </div>
 
@@ -183,7 +183,7 @@
           </div>
 
           <div class="chat-input-container">
-            <textarea id="chat-input" placeholder="Ask Hermes about your ontology..." rows="2"></textarea>
+            <textarea id="chat-input" placeholder="Ask Onto Agent about your ontology..." rows="2"></textarea>
             <button id="btn-send-chat" class="btn primary-btn send-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>

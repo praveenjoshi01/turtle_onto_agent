@@ -1,13 +1,13 @@
-# InternalOnto - RDF Visualizer & Yoda AI Agent
+# OntoSphere AI - RDF Visualizer & Onto Agent
 
-**InternalOnto** is an interactive web-based visualization tool and AI assistant for single and multi-file RDF Turtle (`.ttl`) ontologies and knowledge graphs. It features a 2D/tree graph renderer, a left-side Entity Inspector, and a right-side **Yoda AI Assistant** powered by a dedicated Python LLM Gateway (`agent/client.py`) using `gpt-4o`.
+**OntoSphere AI** is an interactive web-based visualization tool and AI assistant for single and multi-file RDF Turtle (`.ttl`) ontologies and knowledge graphs. It features a 2D/tree graph renderer, a left-side Entity Inspector, and a right-side **Onto Agent** assistant powered by a dedicated Python LLM Gateway (`agent/client.py`) using `gpt-4o`.
 
 ---
 
 ## ✨ Features
 
 - **Single & Multi-File Support**: Upload individual `.ttl` files or batch upload multiple files simultaneously.
-- **Yoda AI Assistant (Right Side Panel)**: Ask questions about your ontology (e.g. "Who manages Engineering?", "What technologies does Project Apollo use?"). Powered by `agent/client.py` gateway and `gpt-4o`.
+- **Onto Agent (Right Side Panel)**: Ask questions about your ontology (e.g. "Who manages Engineering?", "What technologies does Project Apollo use?"). Powered by `agent/client.py` gateway and `gpt-4o`.
 - **Left-Side Entity Inspector**: Click on any node or connection to inspect subject/predicate/object triples on the left sidebar.
 - **Graph Layout Modes**: Switch between Force-Directed Network, Tree (Top-Down), and Tree (Left-Right) views.
 - **Interactive Legend Filtering**: Click legend badges to highlight and zoom to all instances of an RDF class on the canvas.
@@ -32,9 +32,9 @@ Developer and AI agent guidelines can be found in [agent.md](file:///Users/prave
 
 Ensure your `.env` file exists in the repository root containing your OpenAI API key:
 ```env
-open_ai=sk-proj-...
+OPENAI_API_KEY=sk-proj-...
 ```
-> Note: `.env` is listed in `.gitignore` to keep your credentials secure.
+> Note: `.env` is listed in `.gitignore` to keep your credentials secure. You can also configure keys dynamically using the top header button in the web UI.
 
 ### 2. Launch Python LLM Gateway Server (`agent/client.py`)
 
@@ -58,12 +58,12 @@ Open `http://localhost:5173` in your browser.
 ## 📁 Repository Structure
 
 ```
-InternalOnto/
+OntoSphere/
 ├── agent/               # Dedicated AI Agent components directory
-│   ├── client.py        # Python LLM API Gateway server (Yoda AI Gateway)
+│   ├── client.py        # Python LLM API Gateway server (Onto Agent Gateway)
 │   ├── requirements.txt # Python requirements manifest
 │   └── agentClient.js   # Frontend agent communication module
-├── index.html           # Main HTML layout (Left Inspector + Right Yoda AI)
+├── index.html           # Main HTML layout (Left Inspector + Right Onto Agent)
 ├── vite.config.js       # Vite dev server + API proxy configuration
 ├── src/
 │   ├── main.js          # App orchestrator
@@ -83,4 +83,4 @@ InternalOnto/
 
 ## 📜 License
 
-MIT License. Created for internal ontology visualization and AI graph exploration.
+MIT License. Created for ontology visualization and AI graph exploration.

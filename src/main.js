@@ -582,12 +582,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Format Hermes Agent response with <thought> blocks and Markdown
+   * Format Onto Agent response with <thought> blocks and Markdown
    */
   function formatAgentResponse(text) {
     if (!text) return '';
     let processed = text.replace(/<thought>([\s\S]*?)<\/thought>/gi, (match, thoughtBody) => {
-      return `<details class="agent-thought-block" open><summary>🧠 Hermes Agent Reasoning</summary><div class="thought-content">${escapeHtml(thoughtBody.trim())}</div></details>`;
+      return `<details class="agent-thought-block" open><summary>🧠 Onto Agent Reasoning</summary><div class="thought-content">${escapeHtml(thoughtBody.trim())}</div></details>`;
     });
     return marked.parse(processed);
   }
@@ -599,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${role}`;
 
-    const author = role === 'user' ? 'You' : (role === 'system' ? 'Hermes Agent' : 'Hermes Agent');
+    const author = role === 'user' ? 'You' : (role === 'system' ? 'Onto Agent' : 'Onto Agent');
     const content = (role === 'assistant' || role === 'system') ? formatAgentResponse(text) : escapeHtml(text);
 
     msgDiv.innerHTML = `
