@@ -8,24 +8,50 @@ This document provides a detailed technical architecture overview of **InternalO
 
 InternalOnto follows a modular, decoupled Single Page Application (SPA) architecture built with **Vite** and **Vanilla ES Modules**.
 
-```
- +-----------------------------------------------------------------------+
- |                            User Interface                             |
- |  (Header Preset Selector | Drag & Drop Zone | Sidebar Filters | Inspector) |
- +-----------------------------------+-----------------------------------+
-                                     |
-                                     v
- +-----------------------------------+-----------------------------------+
- |                          main.js (Orchestrator)                        |
- +------------------+----------------------------------+------------------+
-                    |                                  |
-                    v                                  v
- +------------------+------------------+   +-----------+------------------+
- |  turtleParser.js (TurtleManager)    |   | graphRenderer.js             |
- |  - N3 Parser & RDF Quad Store       |   | - Vis-Network Canvas Engine  |
- |  - Multi-file Store Merging         |   | - Force-Atlas2 Physics       |
- |  - URI Compacting & Prefix Maps     |   | - Node/Edge Selection        |
- +-------------------------------------+   +------------------------------+
+```mermaid
+graph TD
+    subgraph UI ["User Interface Layer (index.html & style.css)"]
+        Header["App Header & Sample Selector"]
+        DropZone["Drag & Drop Zone & File Upload"]
+        Sidebar["Sidebar Filters & File Manager"]
+        Inspector["Entity Inspector Drawer"]
+    end
+
+    subgraph Controller ["Application Orchestrator"]
+        MainJS["main.js (Event Listener & Coordinator)"]
+    end
+
+    subgraph DataEngine ["Data Engine (src/turtleParser.js)"]
+        TurtleMgr["TurtleManager"]
+        N3Parser["N3.Parser (RDF Turtle Parser)"]
+        QuadStore["N3.Store (Combined RDF Quads)"]
+        UriCompacter["URI Compacter & Prefix Resolver"]
+    end
+
+    subgraph RenderEngine ["Render Engine (src/graphRenderer.js)"]
+        GraphRndr["GraphRenderer"]
+        VisNetwork["Vis-Network Canvas Engine"]
+        Physics["ForceAtlas2 Physics Engine"]
+    end
+
+    %% Flow connections
+    Header -->|Select Sample Preset| MainJS
+    DropZone -->|Upload .ttl Files| MainJS
+    Sidebar -->|Apply Search / Predicate Filters| MainJS
+
+    MainJS -->|Pass Turtle Text| N3Parser
+    N3Parser -->|Parsed Quads| QuadStore
+    QuadStore -->|Merge Quads| TurtleMgr
+    TurtleMgr -->|Extract Nodes & Edges| UriCompacter
+    UriCompacter -->|Graph Dataset| MainJS
+
+    MainJS -->|Render Graph Data| GraphRndr
+    GraphRndr -->|Draw Nodes & Edges| VisNetwork
+    VisNetwork -->|Run Stabilization| Physics
+
+    VisNetwork -->|Node/Edge Click Event| MainJS
+    MainJS -->|Query Quad Details| TurtleMgr
+    TurtleMgr -->|Return Triples| Inspector
 ```
 
 ---
