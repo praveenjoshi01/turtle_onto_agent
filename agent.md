@@ -6,17 +6,18 @@ This document defines coding standards, architecture principles, and guidelines 
 
 - **System Architecture**: Detailed architecture notes and Mermaid system diagrams can be found in [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md).
 - **Frontend**: Vite + Vanilla HTML5/CSS3/JavaScript (ES modules).
-- **RDF Parser**: `n3` library for parsing standard W3C Turtle (`.ttl`) format, handling prefixes, blank nodes, and triples.
-- **Graph Visualization**: `vis-network` interactive force-directed graph renderer.
+- **Python Gateway (`client.py`)**: Flask API gateway server running on port `8000`, using `gpt-4o` via OpenAI API.
+- **RDF Parser**: `n3` library for parsing standard W3C Turtle (`.ttl`) format.
+- **Graph Visualization**: `vis-network` interactive force-directed & tree layout renderer.
 
 ## 🛠️ Code Conventions
 
 1. **Vanilla JS Modular Architecture**: Keep code decoupled into logical modules (`turtleParser.js`, `graphRenderer.js`, `main.js`).
-2. **Architecture Diagrams**: Always maintain Mermaid diagrams (` ```mermaid `) in [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md) instead of plain ASCII text diagrams.
-3. **Design System**: Use modern CSS with dark theme, custom color accents, glassmorphism containers, smooth hover states, and responsive flex/grid layouts.
-4. **RDF Turtle Compliance**: Handle standard Turtle features including `@prefix`, `PREFIX`, `a` shorthand for `rdf:type`, blank nodes (`_:b0`), literals with language tags or datatypes, and URI compacting.
-5. **Performance**: Large graphs (>500 nodes) should use physics stabilization and node clustering/filtering options to maintain 60 FPS graph interaction.
+2. **Python Gateway (`client.py`)**: All LLM interactions pass through `client.py` on port `8000`. Credentials (`open_ai` or `OPENAI_API_KEY`) must strictly remain in `.env` (never committed to git).
+3. **Architecture Diagrams**: Always maintain Mermaid diagrams (` ```mermaid `) in [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md) instead of plain ASCII text diagrams.
+4. **Design System**: Use modern CSS with dark theme, glassmorphism containers, left-side entity inspector, and right-side Hermes AI chat panel.
 
 ## 🧪 Testing & Verification
 
-- Run `npm run build` to verify clean compilation before committing code changes.
+- Run `npm run build` to verify clean frontend compilation before committing code.
+- Run `python3 client.py` to verify API gateway server execution.
