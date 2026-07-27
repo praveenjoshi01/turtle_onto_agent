@@ -1,6 +1,12 @@
 import { TurtleManager } from './turtleParser.js';
 import { GraphRenderer } from './graphRenderer.js';
 import { checkGatewayHealth as checkHealth, sendAgentQuery } from '../agent/agentClient.js';
+import { marked } from 'marked';
+
+marked.setOptions({
+  gfm: true,
+  breaks: true
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   const turtleManager = new TurtleManager();
@@ -478,13 +484,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (result.success) {
-      msgTextEl.textContent = result.reply;
+      msgTextEl.innerHTML = marked.parse(result.reply);
       if (agentStatusIndicator) {
         agentStatusIndicator.textContent = `Connected to ${result.gateway} (${result.model})`;
         agentStatusIndicator.style.color = 'var(--primary-light)';
       }
     } else {
-      msgTextEl.textContent = `⚠️ ${result.error}`;
+      msgTextEl.innerHTML = marked.parse(`⚠️ **${result.error}**`);
     }
 
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -498,10 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
     msgDiv.className = `chat-message ${role}`;
 
     const author = role === 'user' ? 'You' : (role === 'system' ? 'Yoda Agent' : 'Yoda Agent');
+    const content = (role === 'assistant' || role === 'system') ? marked.parse(text) : escapeHtml(text);
 
     msgDiv.innerHTML = `
       <div class="msg-author">${escapeHtml(author)}</div>
-      <div class="msg-text">${escapeHtml(text)}</div>
+      <div class="msg-text markdown-body">${content}</div>
     `;
 
     chatMessages.appendChild(msgDiv);
