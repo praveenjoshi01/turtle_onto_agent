@@ -14,8 +14,9 @@ This document provides developer guidelines and operational instructions for AI 
 
 ## 🤖 Onto Agent Architecture & Capabilities
 
-The AI Agent assistant (**Onto Agent**) is powered by **Nous Hermes Agent** prompt intelligence:
+The AI Agent assistant (**Onto Agent**) is powered by the official **Nous Research Hermes Agent** framework ([github.com/nousresearch/hermes-agent](https://github.com/nousresearch/hermes-agent) v0.19.0):
 - **Reasoning Loop**: Uses `<thought>...</thought>` blocks for multi-hop RDF triple reasoning and entity traversal before returning synthesized answers.
+- **Official `AIAgent` Runner**: `agent/client.py` imports `AIAgent` from `agent/hermes_agent/run_agent.py`.
 - **Supported Models**: `GPT-4o`, `GPT-4o-mini`, `Nous Hermes 3 (405B)`, and `Nous Hermes 3 (70B)`.
 - **UI Thought Accordion**: Frontend parses `<thought>` tags into collapsible `🧠 Onto Agent Reasoning` accordions.
 - **Rich Markdown Formatting**: Chat responses render full GitHub-flavored Markdown.
@@ -28,8 +29,10 @@ The AI Agent assistant (**Onto Agent**) is powered by **Nous Hermes Agent** prom
 InternalOnto/
 ├── agent/               # Dedicated AI Agent components directory
 │   ├── client.py        # Python LLM API Gateway server (Onto Agent Gateway)
+│   ├── hermes_agent/    # Official Nous Research Hermes Agent framework (v0.19.0 subrepo)
 │   ├── requirements.txt # Python requirements manifest
 │   └── agentClient.js   # Frontend agent communication module
+├── setup.sh             # Automated setup script (npm + git clone + uv venv)
 ├── index.html           # Main HTML dashboard (Left Inspector + Right Onto Agent)
 ├── vite.config.js       # Vite dev server & proxy setup (/api -> http://localhost:8000)
 ├── src/
@@ -48,9 +51,9 @@ InternalOnto/
 
 | Endpoint | Method | Description |
 | :--- | :---: | :--- |
-| `/api/health` | `GET` | Health check endpoint returning gateway status and `has_api_key` state. |
+| `/api/health` | `GET` | Health check endpoint returning gateway status, `hermes_framework: true`, and `has_api_key` state. |
 | `/api/set-key` | `POST` | Configures OpenAI / OpenRouter API Key dynamically at runtime and persists to `.env`. |
-| `/api/chat` | `POST` | Dispatches user queries + active Turtle context to the LLM via Nous Hermes reasoning loop. |
+| `/api/chat` | `POST` | Dispatches user queries + active Turtle context to the official Nous Research Hermes Agent runner. |
 
 ---
 
