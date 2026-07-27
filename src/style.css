@@ -377,6 +377,12 @@ body, html {
   height: 10px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
+}
+
+.legend-count {
+  font-size: 10px;
+  color: var(--text-dim);
 }
 
 /* Main Canvas */

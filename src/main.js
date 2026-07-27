@@ -195,8 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const legendItemsContainer = document.getElementById('legend-items');
+
   /**
-   * Fetch current graph data & update Vis-Network graph
+   * Fetch current graph data & update Vis-Network graph and dynamic ontology legend
    */
   function refreshGraph() {
     const filters = {
@@ -209,6 +211,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     statNodes.textContent = `${graphData.nodes.length} Nodes`;
     statTriples.textContent = `${graphData.tripleCount} Triples`;
+
+    renderLegend(graphData.nodes);
+  }
+
+  /**
+   * Render dynamic Ontology Legend extracted from active Turtle files
+   */
+  function renderLegend(nodes) {
+    if (!legendItemsContainer) return;
+    const legendItems = turtleManager.getLegendItems(nodes);
+
+    if (legendItems.length === 0) {
+      legendItemsContainer.innerHTML = `<div class="empty-state">No RDF classes loaded</div>`;
+      return;
+    }
+
+    legendItemsContainer.innerHTML = legendItems.map(item => {
+      const colorDef = graphRenderer.getColorForGroup(item.groupKey);
+      return `<span class="legend-item" title="${item.count} instances">
+        <i style="background: ${colorDef.background}; border: 1px solid ${colorDef.border}"></i>
+        ${escapeHtml(item.label)} <span class="legend-count">(${item.count})</span>
+      </span>`;
+    }).join('');
   }
 
   /**

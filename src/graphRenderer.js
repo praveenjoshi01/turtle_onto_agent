@@ -8,7 +8,7 @@ export class GraphRenderer {
     this.nodesDataSet = null;
     this.edgesDataSet = null;
 
-    // Palette for different RDF Node groups / classes
+    // Preset palette for common RDF Node groups / classes
     this.groupColors = {
       company: { background: '#0284c7', border: '#38bdf8' },
       department: { background: '#0d9488', border: '#2dd4bf' },
@@ -24,11 +24,33 @@ export class GraphRenderer {
   }
 
   /**
+   * Get color definition for any group name (preset or dynamically generated HSL)
+   */
+  getColorForGroup(groupName) {
+    if (!groupName) return this.groupColors.default;
+    const lower = String(groupName).toLowerCase();
+    if (this.groupColors[lower]) {
+      return this.groupColors[lower];
+    }
+
+    // Deterministic HSL color calculation for arbitrary Turtle classes
+    let hash = 0;
+    for (let i = 0; i < lower.length; i++) {
+      hash = lower.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    return {
+      background: `hsl(${hue}, 65%, 45%)`,
+      border: `hsl(${hue}, 80%, 65%)`
+    };
+  }
+
+  /**
    * Initialize or update network graph
    */
   render(graphData) {
     const visNodes = graphData.nodes.map(n => {
-      const colors = this.groupColors[n.group] || this.groupColors.default;
+      const colors = this.getColorForGroup(n.group);
       return {
         id: n.id,
         label: n.label,

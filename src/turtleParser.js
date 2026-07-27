@@ -237,27 +237,60 @@ export class TurtleManager {
   }
 
   /**
-   * Classify node into group for distinct visual styling
+   * Classify node into group dynamically based on RDF type or ontology structure
    */
   getNodeGroup(term) {
-    if (term.termType === 'Literal') return 'literal';
-    if (term.termType === 'BlankNode') return 'bnode';
+    if (term.termType === 'Literal') return 'Literal Value';
+    if (term.termType === 'BlankNode') return 'Blank Node';
 
-    // Check type in store
+    // Check rdf:type in store
     const rdfType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
     const typeQuads = this.combinedStore.getQuads(term, namedNode(rdfType), null, null);
     if (typeQuads.length > 0) {
       const typeUri = typeQuads[0].object.value;
       const compactType = this.compactUri(typeUri);
-      return compactType.split(':').pop().toLowerCase();
+      return compactType;
     }
 
-    // Default by namespace
+    // Check if term is declared as a Class itself
+    const owlClass = 'http://www.w3.org/2002/07/owl#Class';
+    const rdfsClass = 'http://www.w3.org/2000/01/rdf-schema#Class';
+    const isClass = this.combinedStore.getQuads(term, namedNode(rdfType), namedNode(owlClass), null).length > 0 ||
+                    this.combinedStore.getQuads(term, namedNode(rdfType), namedNode(rdfsClass), null).length > 0;
+    if (isClass) {
+      return 'Ontology Class';
+    }
+
+    // Default by prefix
     const compact = this.compactUri(term.value);
     if (compact.includes(':')) {
-      return compact.split(':')[0];
+      return `${compact.split(':')[0]} Resource`;
     }
-    return 'default';
+    return 'Resource';
+  }
+
+  /**
+   * Dynamically generate legend items based on actual classes/groups present in loaded Turtle files
+   */
+  getLegendItems(graphNodes = []) {
+    const groupCounts = new Map();
+
+    graphNodes.forEach(node => {
+      const group = node.group || 'Resource';
+      groupCounts.set(group, (groupCounts.get(group) || 0) + 1);
+    });
+
+    const legendItems = [];
+    groupCounts.forEach((count, groupName) => {
+      legendItems.push({
+        groupKey: groupName,
+        label: groupName,
+        count: count
+      });
+    });
+
+    // Sort by count descending
+    return legendItems.sort((a, b) => b.count - a.count);
   }
 
   /**
