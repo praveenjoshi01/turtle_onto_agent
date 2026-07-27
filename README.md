@@ -20,7 +20,7 @@
 
 For detailed technical architecture, data processing flow, and component design, see [ARCHITECTURE.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/ARCHITECTURE.md).
 
-Developer and AI agent guidelines can be found in [AGENTS.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/AGENTS.md) and [agent.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/agent.md).
+Developer and AI agent guidelines can be found in [agent.md](file:///Users/praveenjoshi/Code/Code2026/InternalOnto/agent.md).
 
 ---
 
@@ -64,8 +64,7 @@ InternalOnto/
 │   └── sample_tech.ttl  # Tech stack connection ontology
 ├── README.md            # Main project documentation
 ├── ARCHITECTURE.md      # Detailed system architecture & data flow
-├── AGENTS.md            # AI agent developer context & rules
-├── agent.md             # Developer guidelines reference
+├── agent.md             # Developer & AI agent guidelines
 └── package.json         # Node manifest and dependencies
 ```
 
