@@ -25,7 +25,8 @@ if api_key:
         os.environ["OPENROUTER_API_KEY"] = openrouter_api_key
 
 try:
-    from run_agent import AIAgent
+    # Dynamically imported from agent/hermes_agent/run_agent.py
+    from run_agent import AIAgent  # type: ignore
     hermes_agent_available = True
     print("✓ Official Nous Research Hermes Agent (AIAgent) initialized successfully.")
 except Exception as exc:
