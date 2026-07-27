@@ -6,8 +6,19 @@ This document provides developer guidelines and operational instructions for AI 
 
 ## 🚨 Critical Security Directive
 
-- **OpenAI API Key**: Stored in root `.env` as `open_ai=sk-proj-...` or `OPENAI_API_KEY=sk-proj-...`.
+- **OpenAI / OpenRouter API Key**: Stored in root `.env` as `OPENAI_API_KEY=sk-proj-...` or `open_ai=sk-proj-...`.
 - **NEVER Commit Credentials**: The `.env` file MUST remain in `.gitignore`. NEVER add, commit, log, or push secret keys to Git.
+- **Dynamic API Key Gateway**: Keys can also be configured at runtime via the web UI top header button (`🔑 Connect OpenAI API`) which calls `POST /api/set-key`.
+
+---
+
+## 🤖 Onto Agent Architecture & Capabilities
+
+The AI Agent assistant (**Onto Agent**) is powered by **Nous Hermes Agent** prompt intelligence:
+- **Reasoning Loop**: Uses `<thought>...</thought>` blocks for multi-hop RDF triple reasoning and entity traversal before returning synthesized answers.
+- **Supported Models**: `GPT-4o`, `GPT-4o-mini`, `Nous Hermes 3 (405B)`, and `Nous Hermes 3 (70B)`.
+- **UI Thought Accordion**: Frontend parses `<thought>` tags into collapsible `🧠 Onto Agent Reasoning` accordions.
+- **Rich Markdown Formatting**: Chat responses render full GitHub-flavored Markdown.
 
 ---
 
@@ -30,6 +41,16 @@ InternalOnto/
 ├── ARCHITECTURE.md      # System architecture & Mermaid diagrams
 └── README.md            # Main README
 ```
+
+---
+
+## 🌐 API Gateway Endpoints (`agent/client.py`)
+
+| Endpoint | Method | Description |
+| :--- | :---: | :--- |
+| `/api/health` | `GET` | Health check endpoint returning gateway status and `has_api_key` state. |
+| `/api/set-key` | `POST` | Configures OpenAI / OpenRouter API Key dynamically at runtime and persists to `.env`. |
+| `/api/chat` | `POST` | Dispatches user queries + active Turtle context to the LLM via Nous Hermes reasoning loop. |
 
 ---
 

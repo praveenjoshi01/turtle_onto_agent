@@ -1,14 +1,19 @@
 # OntoSphere AI - RDF Visualizer & Onto Agent
 
-**OntoSphere AI** is an interactive web-based visualization tool and AI assistant for single and multi-file RDF Turtle (`.ttl`) ontologies and knowledge graphs. It features a 2D/tree graph renderer, a left-side Entity Inspector, and a right-side **Onto Agent** assistant powered by a dedicated Python LLM Gateway (`agent/client.py`) using `gpt-4o`.
+**OntoSphere AI** is an interactive web-based visualization tool and AI assistant for single and multi-file RDF Turtle (`.ttl`) ontologies and knowledge graphs. It features a 2D/tree graph renderer, a left-side Entity Inspector, and a right-side **Onto Agent** powered by **Nous Hermes Agent** intelligence (`agent/client.py`).
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
+- **Onto Agent (Powered by Nous Hermes Agent Intelligence)**: Multi-hop RDF triple reasoning with step-by-step `<thought>` reasoning blocks rendered inside expandable `🧠 Onto Agent Reasoning` accordions.
+- **Multi-Model Selector**: Switch between `GPT-4o`, `GPT-4o-mini`, `Nous Hermes 3 (405B)`, and `Nous Hermes 3 (70B)`.
+- **Dynamic API Key Connection**: Configure OpenAI / OpenRouter keys directly via the top header button (`🔑 Connect OpenAI API`) and glassmorphic modal dialog at runtime.
 - **Single & Multi-File Support**: Upload individual `.ttl` files or batch upload multiple files simultaneously.
-- **Onto Agent (Right Side Panel)**: Ask questions about your ontology (e.g. "Who manages Engineering?", "What technologies does Project Apollo use?"). Powered by `agent/client.py` gateway and `gpt-4o`.
-- **Left-Side Entity Inspector**: Click on any node or connection to inspect subject/predicate/object triples on the left sidebar.
+- **Left-Side Entity Inspector**: Inspect subject/predicate/object triples on the left sidebar, positioned as the bottom-most widget and expanding naturally downwards.
+- **Optimized Right-Side Chat UI**: Scroll area starts directly beneath the model selector header; max 2 recommended question chips sit on top of the bottom chat box with automatic question rotation.
+- **Rich Markdown Formatting**: Chat responses render full GitHub-flavored Markdown including headings, code blocks, lists, blockquotes, and tables.
+- **Premium Glassmorphic Scrollbars**: Ultra-thin 6px cyan-blue gradient scrollbars across all scrollable panes.
 - **Graph Layout Modes**: Switch between Force-Directed Network, Tree (Top-Down), and Tree (Left-Right) views.
 - **Interactive Legend Filtering**: Click legend badges to highlight and zoom to all instances of an RDF class on the canvas.
 
@@ -22,6 +27,16 @@ Developer and AI agent guidelines can be found in [agent.md](file:///Users/prave
 
 ---
 
+## 🌐 API Gateway Endpoints (`agent/client.py`)
+
+| Endpoint | Method | Description |
+| :--- | :---: | :--- |
+| `/api/health` | `GET` | Returns gateway status, active model, and API key configuration state. |
+| `/api/set-key` | `POST` | Configures OpenAI / OpenRouter API Key dynamically at runtime and persists to `.env`. |
+| `/api/chat` | `POST` | Dispatches user queries + active Turtle context to the LLM via Nous Hermes reasoning loop. |
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -30,11 +45,11 @@ Developer and AI agent guidelines can be found in [agent.md](file:///Users/prave
 
 ### 1. Configure Credentials (.env)
 
-Ensure your `.env` file exists in the repository root containing your OpenAI API key:
+Ensure your `.env` file exists in the repository root containing your API key:
 ```env
 OPENAI_API_KEY=sk-proj-...
 ```
-> Note: `.env` is listed in `.gitignore` to keep your credentials secure. You can also configure keys dynamically using the top header button in the web UI.
+> Note: `.env` is listed in `.gitignore` to keep your credentials secure. You can also configure keys dynamically using the top header button (`🔑 Connect OpenAI API`) in the web UI.
 
 ### 2. Launch Python LLM Gateway Server (`agent/client.py`)
 
