@@ -28,7 +28,7 @@ CORS(app)
 def health_check():
     return jsonify({
         "status": "healthy",
-        "gateway": "Hermes AI Gateway",
+        "gateway": "Yoda AI Gateway",
         "has_api_key": bool(api_key),
         "model": "gpt-4o"
     })
@@ -44,15 +44,16 @@ def chat_gateway():
     user_query = data.get("query", "").strip()
     turtle_content = data.get("turtle_content", "").strip()
     triples_summary = data.get("triples_summary", "")
+    requested_model = data.get("model", "gpt-4o").strip()
 
     if not user_query:
         return jsonify({"error": "No query provided."}), 400
 
-    # Build prompt context for gpt-4o
+    # Build prompt context for Yoda AI Agent
     system_prompt = (
-        "You are Hermes, an expert AI Ontology & Knowledge Graph Assistant. "
+        "You are Yoda, a wise AI Ontology Master and Knowledge Graph Guide. "
         "Your task is to analyze the provided RDF Turtle (.ttl) ontologies and graph data "
-        "and answer the user's query accurately, clearly, and concisely. "
+        "and answer the user's query accurately, clearly, and insightfully. "
         "Highlight entities, relationships, classes, and properties. "
         "Format your answer cleanly in GitHub-flavored Markdown."
     )
@@ -71,7 +72,7 @@ Graph Summary Stats:
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model=requested_model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -83,6 +84,8 @@ Graph Summary Stats:
         reply_content = response.choices[0].message.content
         return jsonify({
             "status": "success",
+            "gateway": "Yoda AI Gateway",
+            "model": requested_model,
             "reply": reply_content
         })
 

@@ -45,6 +45,37 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatInput = document.getElementById('chat-input');
   const sendChatBtn = document.getElementById('btn-send-chat');
   const promptChips = document.querySelectorAll('.chip');
+  const modelSelect = document.getElementById('model-select');
+  const agentStatusIndicator = document.getElementById('agent-status-indicator');
+
+  // Check Gateway Health & Model Status
+  checkGatewayHealth();
+
+  if (modelSelect) {
+    modelSelect.addEventListener('change', () => {
+      checkGatewayHealth();
+    });
+  }
+
+  async function checkGatewayHealth() {
+    const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
+    try {
+      let res;
+      try {
+        res = await fetch('/api/health');
+      } catch (e1) {
+        res = await fetch('http://localhost:8000/api/health');
+      }
+      const data = await res.json();
+      if (data.status === 'healthy') {
+        agentStatusIndicator.textContent = `Connected to ${data.gateway} (${selectedModel})`;
+        agentStatusIndicator.style.color = 'var(--primary-light)';
+      }
+    } catch (err) {
+      agentStatusIndicator.textContent = `Offline: client.py on port 8000 (${selectedModel})`;
+      agentStatusIndicator.style.color = 'var(--danger)';
+    }
+  }
 
   // Event Listeners
   uploadBtnTrigger.addEventListener('click', () => fileInput.click());
@@ -393,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Handle Hermes AI Chat Submission
+   * Handle Yoda AI Chat Submission
    */
   async function handleUserChatMessage() {
     const text = chatInput.value.trim();
@@ -414,14 +445,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const graphData = turtleManager.getGraphData();
     const triplesSummary = `Active Files: ${turtleManager.activeFileIds.size}, Nodes: ${graphData.nodes.length}, Triples: ${graphData.tripleCount}`;
+    const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
 
     // Create temporary Assistant response element
-    const assistantMsgEl = appendChatMessage('assistant', 'Thinking...');
+    const assistantMsgEl = appendChatMessage('assistant', 'Consulting the Force...');
     const msgTextEl = assistantMsgEl.querySelector('.msg-text');
 
     let response;
     const payload = JSON.stringify({
       query: text,
+      model: selectedModel,
       turtle_content: combinedTurtleText,
       triples_summary: triplesSummary
     });
@@ -446,6 +479,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok && resData.reply) {
         msgTextEl.textContent = resData.reply;
+        if (resData.gateway && resData.model) {
+          agentStatusIndicator.textContent = `Connected to ${resData.gateway} (${resData.model})`;
+        }
       } else {
         msgTextEl.textContent = `⚠️ Gateway Error: ${resData.error || 'Unable to connect to client.py API gateway server.'}`;
       }
@@ -463,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${role}`;
 
-    const author = role === 'user' ? 'You' : (role === 'system' ? 'Hermes Agent' : 'Hermes Agent');
+    const author = role === 'user' ? 'You' : (role === 'system' ? 'Yoda Agent' : 'Yoda Agent');
 
     msgDiv.innerHTML = `
       <div class="msg-author">${escapeHtml(author)}</div>
@@ -488,3 +524,4 @@ document.addEventListener('DOMContentLoaded', () => {
   sampleSelect.value = 'multi_both';
   handleSampleSelect({ target: { value: 'multi_both' } });
 });
+
