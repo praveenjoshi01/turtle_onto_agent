@@ -1,0 +1,65 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix org: <http://example.org/ontology/> .
+@prefix ex: <http://example.org/data/> .
+
+# Classes
+org:Company a owl:Class ;
+    rdfs:label "Company" .
+
+org:Department a owl:Class ;
+    rdfs:label "Department" .
+
+org:Person a owl:Class ;
+    rdfs:label "Person" .
+
+org:Project a owl:Class ;
+    rdfs:label "Project" .
+
+# Entities & Relationships
+ex:AcmeCorp a org:Company ;
+    rdfs:label "Acme Corporation" ;
+    org:hasDepartment ex:EngineeringDept , ex:DesignDept , ex:ResearchDept .
+
+ex:EngineeringDept a org:Department ;
+    rdfs:label "Engineering Department" ;
+    org:managedBy ex:Alice ;
+    org:hasMember ex:Bob , ex:Charlie .
+
+ex:DesignDept a org:Department ;
+    rdfs:label "Design Department" ;
+    org:managedBy ex:Diana ;
+    org:hasMember ex:Evan .
+
+ex:ResearchDept a org:Department ;
+    rdfs:label "Research & Development" ;
+    org:managedBy ex:Fiona .
+
+ex:Alice a org:Person ;
+    rdfs:label "Alice Johnson" ;
+    org:role "VP of Engineering" ;
+    org:leadsProject ex:ProjectApollo .
+
+ex:Bob a org:Person ;
+    rdfs:label "Bob Smith" ;
+    org:role "Lead Architect" ;
+    org:contributesTo ex:ProjectApollo .
+
+ex:Charlie a org:Person ;
+    rdfs:label "Charlie Brown" ;
+    org:role "Senior Developer" ;
+    org:contributesTo ex:ProjectApollo .
+
+ex:Diana a org:Person ;
+    rdfs:label "Diana Prince" ;
+    org:role "Head of Design" ;
+    org:leadsProject ex:ProjectCanvas .
+
+ex:ProjectApollo a org:Project ;
+    rdfs:label "Project Apollo (Knowledge Platform)" ;
+    org:status "Active" .
+
+ex:ProjectCanvas a org:Project ;
+    rdfs:label "Project Canvas (Design System)" ;
+    org:status "Planning" .

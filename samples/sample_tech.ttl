@@ -1,0 +1,38 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix org: <http://example.org/ontology/> .
+@prefix tech: <http://example.org/tech/> .
+@prefix ex: <http://example.org/data/> .
+
+# Tech Ontology Classes
+tech:Technology a rdfs:Class ;
+    rdfs:label "Technology Stack" .
+
+tech:Database a rdfs:Class ;
+    rdfs:subClassOf tech:Technology ;
+    rdfs:label "Database" .
+
+tech:Framework a rdfs:Class ;
+    rdfs:subClassOf tech:Technology ;
+    rdfs:label "Framework" .
+
+# Linking Projects to Technologies (Cross-ontology references to sample_org.ttl)
+ex:ProjectApollo tech:usesTechnology tech:GraphDB , tech:Vite , tech:VisNetwork .
+
+ex:ProjectCanvas tech:usesTechnology tech:FigmaApi , tech:Vite .
+
+tech:GraphDB a tech:Database ;
+    rdfs:label "GraphDB RDF Store" ;
+    tech:license "Commercial / Free Tier" ;
+    tech:maintainedBy ex:Bob .
+
+tech:Vite a tech:Framework ;
+    rdfs:label "Vite Build Tool" ;
+    tech:license "MIT" .
+
+tech:VisNetwork a tech:Framework ;
+    rdfs:label "Vis-Network Graph Library" ;
+    tech:license "MIT" .
+
+ex:Alice tech:expertIn tech:GraphDB , tech:Vite .
+ex:Bob tech:expertIn tech:GraphDB .

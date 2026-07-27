@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InternalOnto - Multi-Turtle RDF Visualizer</title>
+  <link rel="stylesheet" href="./src/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body class="dark-theme">
+  <div id="app" class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">🐢</div>
+        <div class="brand-text">
+          <h1>InternalOnto</h1>
+          <span class="badge">Multi-Turtle Visualizer</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="sample-picker-container">
+          <label for="sample-select">Load Preset Sample:</label>
+          <select id="sample-select" class="custom-select">
+            <option value="">Select Sample Ontology...</option>
+            <option value="single_org">Single: Organization Ontology</option>
+            <option value="single_tech">Single: Tech Stack Ontology</option>
+            <option value="multi_both">Multi: Org + Tech Linked Graphs</option>
+          </select>
+        </div>
+
+        <button id="btn-upload-trigger" class="btn primary-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload .ttl Files
+        </button>
+        <input type="file" id="file-input" multiple accept=".ttl,.turtle,.txt,.n3,.owl" style="display: none;" />
+      </div>
+    </header>
+
+    <!-- Main Viewport split into Sidebar, Canvas, Inspector -->
+    <div class="main-viewport">
+      
+      <!-- Left Sidebar: Controls & File Manager -->
+      <aside class="sidebar">
+        
+        <!-- Drag & Drop Zone -->
+        <div class="drop-zone" id="drop-zone">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+          <p class="drop-text">Drag & drop <strong>.ttl</strong> files here</p>
+          <span class="subtext">Supports single or multi-file upload</span>
+        </div>
+
+        <!-- Loaded Files Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Loaded Files (<span id="file-count">0</span>)</h3>
+            <button id="btn-clear-all" class="text-btn danger" title="Clear all files">Clear All</button>
+          </div>
+          <div id="file-list" class="file-list-container">
+            <div class="empty-state">No Turtle files loaded yet. Upload files or select a sample preset.</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Graph Filters</h3>
+          </div>
+          <div class="filter-controls">
+            <div class="control-group">
+              <label for="search-input">Search Entities / Nodes</label>
+              <div class="search-box">
+                <input type="text" id="search-input" placeholder="e.g. Acme, Alice, Project..." />
+                <button id="btn-clear-search" class="clear-icon">×</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="predicate-filter">Filter by Predicate</label>
+              <input type="text" id="predicate-filter" placeholder="e.g. hasDepartment, usesTechnology..." />
+            </div>
+
+            <div class="control-group checkbox-group">
+              <label><input type="checkbox" id="physics-toggle" checked /> Enable Physics Simulation</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Node Group Legend -->
+        <div class="panel legend-panel">
+          <h3>Ontology Legend</h3>
+          <div class="legend-items">
+            <span class="legend-item"><i style="background: #0284c7;"></i> Company</span>
+            <span class="legend-item"><i style="background: #0d9488;"></i> Department</span>
+            <span class="legend-item"><i style="background: #7c3aed;"></i> Person</span>
+            <span class="legend-item"><i style="background: #ea580c;"></i> Project</span>
+            <span class="legend-item"><i style="background: #e11d48;"></i> Tech / Stack</span>
+            <span class="legend-item"><i style="background: #334155;"></i> Literal Value</span>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Center Visualization Canvas -->
+      <main class="canvas-container">
+        <div class="canvas-toolbar">
+          <div class="stats-badge">
+            <span id="stat-nodes">0 Nodes</span>
+            <span class="dot">•</span>
+            <span id="stat-triples">0 Triples</span>
+          </div>
+          <div class="canvas-actions">
+            <button id="btn-fit" class="btn icon-btn" title="Reset Zoom / Fit Graph">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="graph-canvas" class="graph-canvas"></div>
+      </main>
+
+      <!-- Right Inspector Panel -->
+      <aside id="inspector-panel" class="inspector-panel">
+        <div class="inspector-header">
+          <h3>Entity Inspector</h3>
+          <button id="btn-close-inspector" class="close-btn">&times;</button>
+        </div>
+        <div id="inspector-content" class="inspector-content">
+          <div class="empty-inspector">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <p>Click on any node or connection line in the graph to inspect its RDF statements and properties.</p>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
