@@ -84,6 +84,15 @@
               <input type="text" id="predicate-filter" placeholder="e.g. hasDepartment, usesTechnology..." />
             </div>
 
+            <div class="control-group">
+              <label for="layout-select">Graph Layout</label>
+              <select id="layout-select" class="custom-select" style="width: 100%;">
+                <option value="force">Force-Directed Network</option>
+                <option value="tree_ud">Tree (Top-Down)</option>
+                <option value="tree_lr">Tree (Left-Right)</option>
+              </select>
+            </div>
+
             <div class="control-group checkbox-group">
               <label><input type="checkbox" id="physics-toggle" checked /> Enable Physics Simulation</label>
             </div>

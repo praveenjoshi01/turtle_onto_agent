@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('search-input');
   const clearSearchBtn = document.getElementById('btn-clear-search');
   const predicateFilterInput = document.getElementById('predicate-filter');
+  const layoutSelect = document.getElementById('layout-select');
   const physicsToggle = document.getElementById('physics-toggle');
   const fitBtn = document.getElementById('btn-fit');
   const closeInspectorBtn = document.getElementById('btn-close-inspector');
@@ -77,6 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   predicateFilterInput.addEventListener('input', () => refreshGraph());
+
+  if (layoutSelect) {
+    layoutSelect.addEventListener('change', (e) => {
+      graphRenderer.setLayoutMode(e.target.value);
+    });
+  }
+
   physicsToggle.addEventListener('change', (e) => {
     graphRenderer.togglePhysics(e.target.checked);
   });

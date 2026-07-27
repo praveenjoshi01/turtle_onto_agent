@@ -202,6 +202,63 @@ export class GraphRenderer {
   }
 
   /**
+   * Switch graph layout mode (Force-directed vs Tree Top-Down vs Tree Left-Right)
+   */
+  setLayoutMode(mode) {
+    if (!this.network) return;
+
+    if (mode === 'tree_ud' || mode === 'tree_lr') {
+      const direction = mode === 'tree_lr' ? 'LR' : 'UD';
+      this.network.setOptions({
+        layout: {
+          hierarchical: {
+            enabled: true,
+            direction: direction,
+            sortMethod: 'directed',
+            nodeSpacing: 160,
+            levelSeparation: 140,
+            treeSpacing: 200,
+            blockShifting: true,
+            edgeMinimization: true,
+            parentCentralization: true
+          }
+        },
+        physics: {
+          enabled: true,
+          solver: 'hierarchicalRepulsion',
+          hierarchicalRepulsion: {
+            centralGravity: 0.0,
+            springLength: 120,
+            springConstant: 0.01,
+            nodeDistance: 150,
+            damping: 0.09
+          }
+        }
+      });
+    } else {
+      this.network.setOptions({
+        layout: {
+          hierarchical: {
+            enabled: false
+          }
+        },
+        physics: {
+          enabled: true,
+          solver: 'forceAtlas2Based',
+          forceAtlas2Based: {
+            gravitationalConstant: -50,
+            centralGravity: 0.01,
+            springLength: 100,
+            springConstant: 0.08,
+            damping: 0.4
+          }
+        }
+      });
+    }
+    this.fitViewport();
+  }
+
+  /**
    * Highlight and zoom to all nodes belonging to a specific group/class key
    */
   highlightGroup(groupKey) {
