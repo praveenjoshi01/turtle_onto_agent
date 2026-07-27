@@ -98,21 +98,41 @@ def chat_gateway():
     turtle_content = data.get("turtle_content", "").strip()
     triples_summary = data.get("triples_summary", "")
     requested_model = data.get("model", "gpt-4o").strip()
+    use_hermes = data.get("use_hermes", True)
+    history = data.get("history", [])
 
     if not user_query:
         return jsonify({"error": "No query provided."}), 400
 
-    system_prompt = (
-        "You are Onto Agent powered by Nous Research Hermes Agent framework. "
-        "Your task is to analyze RDF Turtle (.ttl) ontologies, perform step-by-step entity and relationship traversal, "
-        "and synthesize insightful answers.\n\n"
-        "Instructions:\n"
-        "1. First, outline your step-by-step reasoning inside <thought>...</thought> tags. Analyze subjects, predicates, objects, and ontology rules.\n"
-        "2. Follow with your comprehensive, structured answer formatted in GitHub-flavored Markdown.\n"
-        "3. Highlight key classes, properties, and entity relationships clearly with tables and code blocks where helpful."
-    )
+    try:
+        provider = "openrouter" if ("nousresearch" in requested_model or openrouter_api_key or api_key.startswith("sk-or-")) else "openai-api"
 
-    user_prompt = f"""User Query:
+        if use_hermes and hermes_agent_available:
+            system_prompt = (
+                "You are Onto Agent powered by Nous Research Hermes Agent framework. "
+                "Your task is to analyze RDF Turtle (.ttl) ontologies, perform step-by-step entity and relationship traversal, "
+                "and synthesize insightful answers.\n\n"
+                "Instructions:\n"
+                "1. First, outline your step-by-step reasoning inside <thought>...</thought> tags. Analyze subjects, predicates, objects, and ontology rules.\n"
+                "2. Follow with your comprehensive, structured answer formatted in GitHub-flavored Markdown.\n"
+                "3. Highlight key classes, properties, and entity relationships clearly with tables and code blocks where helpful."
+            )
+
+            history_str = ""
+            if history:
+                formatted_hist = []
+                for m in history[-6:]:
+                    r = "User" if m.get("role") == "user" else "Assistant"
+                    c = m.get("content", "")
+                    # Strip reasoning blocks from history if present
+                    c_clean = re.sub(r"<details[\s\S]*?<\/details>", "", c).strip()
+                    c_clean = re.sub(r"<thought>[\s\S]*?<\/thought>", "", c_clean).strip()
+                    if c_clean:
+                        formatted_hist.append(f"{r}: {c_clean}")
+                if formatted_hist:
+                    history_str = "Prior Conversation History:\n" + "\n".join(formatted_hist) + "\n\n"
+
+            user_prompt = f"""{history_str}Current User Query:
 {user_query}
 
 Active Turtle RDF Context:
@@ -124,10 +144,6 @@ Graph Summary Stats:
 {triples_summary if triples_summary else 'N/A'}
 """
 
-    try:
-        provider = "openrouter" if ("nousresearch" in requested_model or openrouter_api_key or api_key.startswith("sk-or-")) else "openai-api"
-
-        if hermes_agent_available:
             # Instantiate official Nous Research Hermes Agent AIAgent runner
             agent_runner = AIAgent(
                 model=requested_model,
@@ -150,24 +166,56 @@ Graph Summary Stats:
                     reply_text = final_res
             else:
                 reply_text = str(res)
+
+            gateway_label = "Onto Agent Gateway (Nous Hermes Framework)"
+
         else:
+            # Fallback Native OpenAI Chat Mode
+            import re
             from openai import OpenAI
             base_url = "https://openrouter.ai/api/v1" if provider == "openrouter" else None
             client = OpenAI(api_key=api_key, base_url=base_url)
+
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are Onto Assistant, a direct and intelligent Knowledge Graph assistant. "
+                        "Answer user questions clearly and concisely based on the provided Turtle (.ttl) ontology context. "
+                        "Use formatted GitHub-flavored Markdown without <thought> tags."
+                    )
+                }
+            ]
+
+            # Add past conversation history
+            for m in history[-10:]:
+                r = m.get("role", "user")
+                c = m.get("content", "")
+                # Clean thought accordions if switching from Hermes mode
+                c_clean = re.sub(r"<details[\s\S]*?<\/details>", "", c).strip()
+                c_clean = re.sub(r"<thought>[\s\S]*?<\/thought>", "", c_clean).strip()
+                if r in ["user", "assistant"] and c_clean:
+                    messages.append({"role": r, "content": c_clean})
+
+            # Add current user query + active context
+            context_snippet = f"\n\nActive Turtle Context:\n```turtle\n{turtle_content[:6000]}\n```\nSummary: {triples_summary}" if turtle_content else ""
+            messages.append({
+                "role": "user",
+                "content": f"{user_query}{context_snippet}"
+            })
+
             response = client.chat.completions.create(
                 model=requested_model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.2,
-                max_tokens=1200
+                messages=messages,
+                temperature=0.3,
+                max_tokens=1000
             )
             reply_text = response.choices[0].message.content
+            gateway_label = "Native OpenAI Chat Mode"
 
         return jsonify({
             "status": "success",
-            "gateway": "Onto Agent Gateway (Nous Hermes Framework)",
+            "gateway": gateway_label,
             "model": requested_model,
             "reply": reply_text
         })

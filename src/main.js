@@ -64,8 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const promptChipsContainer = document.getElementById('prompt-chips');
   const modelSelect = document.getElementById('model-select');
   const agentStatusIndicator = document.getElementById('agent-status-indicator');
+  const hermesAgentToggle = document.getElementById('hermes-agent-toggle');
 
   let currentHasApiKey = false;
+  // In-memory conversation history (persists until page refresh)
+  const chatHistory = [];
 
   // Recommended Questions Pool (Max 2 displayed above chat input at bottom)
   const recommendationPool = [
@@ -112,7 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
     currentHasApiKey = status.hasApiKey;
 
     if (agentStatusIndicator) {
-      agentStatusIndicator.textContent = status.text;
+      const modeLabel = (hermesAgentToggle && !hermesAgentToggle.checked) ? 'Native Chat Mode' : (status.gateway || 'Onto Agent Gateway');
+      agentStatusIndicator.textContent = `Connected to ${modeLabel} (${selectedModel})`;
       agentStatusIndicator.style.color = status.healthy ? 'var(--primary-light)' : 'var(--danger)';
     }
 
@@ -130,15 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
   updateGatewayStatus();
 
   if (modelSelect) {
-    modelSelect.addEventListener('change', () => {
-      updateGatewayStatus();
-    });
+    modelSelect.addEventListener('change', updateGatewayStatus);
+  }
+
+  if (hermesAgentToggle) {
+    hermesAgentToggle.addEventListener('change', updateGatewayStatus);
   }
 
   if (keyConfigBtn) {
-    keyConfigBtn.addEventListener('click', () => {
-      openKeyModal();
-    });
+    keyConfigBtn.addEventListener('click', openKeyModal);
   }
 
   function openKeyModal() {
@@ -253,6 +257,72 @@ document.addEventListener('DOMContentLoaded', () => {
       handleUserChatMessage();
     }
   });
+
+  /**
+   * Handle Onto AI Chat Submission
+   */
+  async function handleUserChatMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    if (!currentHasApiKey) {
+      openKeyModal();
+      keyModalMsg.style.display = 'block';
+      keyModalMsg.style.color = 'var(--danger)';
+      keyModalMsg.textContent = 'Please enter your OpenAI API key to start chatting.';
+      return;
+    }
+
+    const useHermes = hermesAgentToggle ? hermesAgentToggle.checked : true;
+
+    // Append user message to UI & rotate recommended chips
+    appendChatMessage('user', text);
+    chatInput.value = '';
+    rotateRecommendedChips();
+
+    // Extract active Turtle content & triples summary
+    let combinedTurtleText = '';
+    turtleManager.activeFileIds.forEach(id => {
+      const file = turtleManager.files.get(id);
+      if (file) {
+        combinedTurtleText += `# --- File: ${file.name} ---\n` + file.content + '\n\n';
+      }
+    });
+
+    const graphData = turtleManager.getGraphData();
+    const triplesSummary = `Active Files: ${turtleManager.activeFileIds.size}, Nodes: ${graphData.nodes.length}, Triples: ${graphData.tripleCount}`;
+    const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
+
+    // Create temporary Assistant response element
+    const assistantMsgEl = appendChatMessage('assistant', useHermes ? 'Consulting Hermes Reasoning Engine...' : 'Thinking...');
+    const msgTextEl = assistantMsgEl.querySelector('.msg-text');
+
+    const result = await sendAgentQuery({
+      query: text,
+      model: selectedModel,
+      turtleContent: combinedTurtleText,
+      triplesSummary: triplesSummary,
+      useHermesAgent: useHermes,
+      history: chatHistory
+    });
+
+    if (result.success) {
+      msgTextEl.innerHTML = formatAgentResponse(result.reply);
+
+      // Save turn to in-memory conversation history
+      chatHistory.push({ role: 'user', content: text });
+      chatHistory.push({ role: 'assistant', content: result.reply });
+
+      if (agentStatusIndicator) {
+        agentStatusIndicator.textContent = `Connected to ${result.gateway} (${result.model})`;
+        agentStatusIndicator.style.color = 'var(--primary-light)';
+      }
+    } else {
+      msgTextEl.innerHTML = formatAgentResponse(`⚠️ **${result.error}**`);
+    }
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
   /**
    * Handle File Selection via File Picker

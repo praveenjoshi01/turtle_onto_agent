@@ -66,14 +66,16 @@ export async function saveApiKey(apiKey) {
 }
 
 /**
- * Send user query & active Turtle context to Yoda AI Gateway
+ * Send user query & active Turtle context to Onto AI Gateway
  */
-export async function sendAgentQuery({ query, model = 'gpt-4o', turtleContent = '', triplesSummary = '' }) {
+export async function sendAgentQuery({ query, model = 'gpt-4o', turtleContent = '', triplesSummary = '', useHermesAgent = true, history = [] }) {
   const payload = JSON.stringify({
     query,
     model,
     turtle_content: turtleContent,
-    triples_summary: triplesSummary
+    triples_summary: triplesSummary,
+    use_hermes: useHermesAgent,
+    history: history
   });
 
   let response;
