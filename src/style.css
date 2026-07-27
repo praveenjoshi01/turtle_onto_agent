@@ -313,15 +313,16 @@ body, html {
 
 /* Left Entity Inspector Panel */
 .inspector-left-panel {
-  min-height: 150px;
-  max-height: 280px;
+  min-height: 120px;
+  max-height: none;
+  height: auto;
   display: flex;
   flex-direction: column;
 }
 
 .inspector-content {
-  overflow-y: auto;
-  flex: 1;
+  overflow: visible;
+  flex: none;
 }
 
 .empty-inspector {
