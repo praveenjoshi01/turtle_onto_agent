@@ -73,6 +73,7 @@ export async function saveApiKey(apiKey) {
  * Send user query & active Turtle context to Onto AI Gateway
  */
 export async function sendAgentQuery({ query, model = 'gpt-4o', turtleContent = '', triplesSummary = '', useHermesAgent = true, history = [] }) {
+  const startTime = performance.now();
   const payload = JSON.stringify({
     query,
     model,
@@ -98,25 +99,39 @@ export async function sendAgentQuery({ query, model = 'gpt-4o', turtleContent = 
       });
     }
 
+    const clientLatency = Math.round(performance.now() - startTime);
     const resData = await response.json();
 
     if (response.ok && resData.reply) {
+      const promptToks = resData.tokens?.prompt ?? Math.max(1, Math.floor((query.length + turtleContent.length) / 4));
+      const compToks = resData.tokens?.completion ?? Math.max(1, Math.floor(resData.reply.length / 4));
+      const totalToks = resData.tokens?.total ?? (promptToks + compToks);
+
       return {
         success: true,
         reply: resData.reply,
         gateway: resData.gateway || 'Yoda AI Gateway',
-        model: resData.model || model
+        model: resData.model || model,
+        tokens: {
+          prompt: promptToks,
+          completion: compToks,
+          total: totalToks
+        },
+        latency_ms: resData.latency_ms || clientLatency
       };
     } else {
       return {
         success: false,
-        error: resData.error || 'Server returned an error.'
+        error: resData.error || 'Server returned an error.',
+        latency_ms: clientLatency
       };
     }
   } catch (err) {
+    const clientLatency = Math.round(performance.now() - startTime);
     return {
       success: false,
-      error: `Gateway Connection Failed (${err.message}). Please verify python3 agent/client.py is running on port 8000.`
+      error: `Gateway Connection Failed (${err.message}). Please verify python3 agent/client.py is running on port 8000.`,
+      latency_ms: clientLatency
     };
   }
 }

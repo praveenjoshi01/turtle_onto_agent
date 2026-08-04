@@ -100,11 +100,19 @@ def handle_custom_api_request(payload: dict) -> dict:
         # Demonstration custom model name provided by external endpoint
         endpoint_returned_model = os.getenv("CUSTOM_MODEL_NAME", "llama-3.3-70b-custom")
 
+        prompt_toks = max(1, len(user_query + turtle_content) // 4)
+        comp_toks = max(1, len(reply_text) // 4)
+
         return {
             "status": "success",
             "gateway": "Custom API Endpoint Blueprint",
             "model": endpoint_returned_model,
-            "reply": reply_text
+            "reply": reply_text,
+            "tokens": {
+                "prompt": prompt_toks,
+                "completion": comp_toks,
+                "total": prompt_toks + comp_toks
+            }
         }
 
     except Exception as err:

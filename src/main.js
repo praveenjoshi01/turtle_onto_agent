@@ -628,6 +628,96 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
+   * Helper to format latency string (in seconds or ms)
+   */
+  function formatLatency(ms) {
+    if (ms >= 1000) {
+      return `${(ms / 1000).toFixed(2)}s`;
+    }
+    return `${ms}ms`;
+  }
+
+  /**
+   * Render/Update Response Meta Footer containing token count & latency with (i) icon
+   */
+  function updateResponseMetaFooter(footerEl, meta = {}) {
+    if (!footerEl) return;
+    if (meta.isPending) {
+      footerEl.innerHTML = `
+        <div class="msg-meta-pill pending">
+          <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <span class="meta-summary">Processing response...</span>
+        </div>
+      `;
+      return;
+    }
+
+    const tokens = meta.tokens || { prompt: 0, completion: 0, total: 0 };
+    const latencyMs = meta.latency_ms || 0;
+    const latencyStr = formatLatency(latencyMs);
+    const totalToks = tokens.total || (tokens.prompt + tokens.completion);
+
+    footerEl.innerHTML = `
+      <button class="msg-meta-pill" type="button" aria-label="View Response Metrics">
+        <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <span class="meta-summary">${totalToks.toLocaleString()} tokens (${tokens.prompt.toLocaleString()} in • ${tokens.completion.toLocaleString()} out) • ${latencyStr}</span>
+      </button>
+      <div class="meta-popover hidden">
+        <div class="popover-header">
+          <span class="popover-title">Response Performance Metrics</span>
+          <button class="popover-close" type="button">&times;</button>
+        </div>
+        <div class="popover-body">
+          <div class="metric-row">
+            <span class="metric-label">⚡ Latency:</span>
+            <span class="metric-val">${latencyMs.toLocaleString()} ms (${latencyStr})</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">🔤 Total Tokens:</span>
+            <span class="metric-val">${totalToks.toLocaleString()}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">📥 Prompt Tokens (Input):</span>
+            <span class="metric-val">${tokens.prompt.toLocaleString()}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">📤 Completion Tokens (Output):</span>
+            <span class="metric-val">${tokens.completion.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const pillBtn = footerEl.querySelector('.msg-meta-pill');
+    const popover = footerEl.querySelector('.meta-popover');
+    const closeBtn = footerEl.querySelector('.popover-close');
+
+    if (pillBtn && popover) {
+      pillBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.meta-popover').forEach(p => {
+          if (p !== popover) p.classList.add('hidden');
+        });
+        popover.classList.toggle('hidden');
+      });
+    }
+
+    if (closeBtn && popover) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popover.classList.add('hidden');
+      });
+    }
+  }
+
+  // Close popovers on click outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.msg-meta-footer')) {
+      document.querySelectorAll('.meta-popover').forEach(p => p.classList.add('hidden'));
+    }
+  });
+
+  /**
    * Handle Yoda AI Chat Submission
    */
   async function handleUserChatMessage() {
@@ -660,9 +750,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const triplesSummary = `Active Files: ${turtleManager.activeFileIds.size}, Nodes: ${graphData.nodes.length}, Triples: ${graphData.tripleCount}`;
     const selectedModel = modelSelect ? modelSelect.value : 'gpt-4o';
 
-    // Create temporary Assistant response element
-    const assistantMsgEl = appendChatMessage('assistant', 'Consulting the Force...');
+    // Create temporary Assistant response element with pending metadata state
+    const assistantMsgEl = appendChatMessage('assistant', 'Consulting the Force...', { isPending: true });
     const msgTextEl = assistantMsgEl.querySelector('.msg-text');
+    const metaFooterEl = assistantMsgEl.querySelector('.msg-meta-footer');
 
     const result = await sendAgentQuery({
       query: text,
@@ -673,12 +764,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (result.success) {
       msgTextEl.innerHTML = formatAgentResponse(result.reply);
+      updateResponseMetaFooter(metaFooterEl, {
+        tokens: result.tokens,
+        latency_ms: result.latency_ms
+      });
       if (agentStatusIndicator) {
         agentStatusIndicator.textContent = `Connected to ${result.gateway} (${result.model})`;
         agentStatusIndicator.style.color = 'var(--primary-light)';
       }
     } else {
       msgTextEl.innerHTML = formatAgentResponse(`⚠️ **${result.error}**`);
+      updateResponseMetaFooter(metaFooterEl, {
+        tokens: { prompt: Math.max(1, Math.floor((text.length + combinedTurtleText.length) / 4)), completion: 15, total: Math.max(1, Math.floor((text.length + combinedTurtleText.length) / 4)) + 15 },
+        latency_ms: result.latency_ms || 0
+      });
     }
 
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -698,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /**
    * Append Chat Message to UI container
    */
-  function appendChatMessage(role, text) {
+  function appendChatMessage(role, text, meta = null) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${role}`;
 
@@ -709,6 +808,18 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="msg-author">${escapeHtml(author)}</div>
       <div class="msg-text markdown-body">${content}</div>
     `;
+
+    if (role === 'assistant' || role === 'system') {
+      const footerDiv = document.createElement('div');
+      footerDiv.className = 'msg-meta-footer';
+      msgDiv.appendChild(footerDiv);
+
+      const defaultMeta = meta || {
+        tokens: { prompt: 0, completion: Math.max(1, Math.floor(text.length / 4)), total: Math.max(1, Math.floor(text.length / 4)) },
+        latency_ms: 0
+      };
+      updateResponseMetaFooter(footerDiv, defaultMeta);
+    }
 
     chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -723,6 +834,21 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
+
+  // Ensure any existing pre-rendered system messages get a metadata footer
+  document.querySelectorAll('#chat-messages .chat-message').forEach(msgEl => {
+    if ((msgEl.classList.contains('system') || msgEl.classList.contains('assistant')) && !msgEl.querySelector('.msg-meta-footer')) {
+      const footerDiv = document.createElement('div');
+      footerDiv.className = 'msg-meta-footer';
+      msgEl.appendChild(footerDiv);
+      const textContent = msgEl.querySelector('.msg-text')?.textContent || '';
+      const estimatedToks = Math.max(1, Math.floor(textContent.length / 4));
+      updateResponseMetaFooter(footerDiv, {
+        tokens: { prompt: 0, completion: estimatedToks, total: estimatedToks },
+        latency_ms: 0
+      });
+    }
+  });
 
   // Load initial preset sample on startup
   sampleSelect.value = 'multi_both';

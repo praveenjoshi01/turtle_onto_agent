@@ -747,6 +747,139 @@ body, html {
   line-height: 1.6;
 }
 
+/* Response Footer Metadata (Tokens & Latency) */
+.msg-meta-footer {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.msg-meta-pill {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace, sans-serif;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.msg-meta-pill:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: var(--primary-light);
+}
+
+.msg-meta-pill.pending {
+  cursor: default;
+  opacity: 0.8;
+  animation: pulse-meta 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-meta {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.info-icon {
+  flex-shrink: 0;
+  color: #38bdf8;
+}
+
+.meta-summary {
+  line-height: 1;
+}
+
+/* Interactive Metrics Popover */
+.meta-popover {
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  z-index: 100;
+  width: 240px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  animation: fadeInPopover 0.15s ease-out;
+}
+
+.meta-popover.hidden {
+  display: none !important;
+}
+
+@keyframes fadeInPopover {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.popover-title {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--primary-light);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.popover-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.popover-close:hover {
+  color: #fff;
+}
+
+.popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+}
+
+.metric-label {
+  color: var(--text-muted);
+}
+
+.metric-val {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
 /* Hermes Agent Reasoning Thought Block */
 details.agent-thought-block {
   background: rgba(15, 23, 42, 0.95);

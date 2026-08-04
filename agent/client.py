@@ -1,9 +1,17 @@
 import os
 import sys
+import time
+import re
 from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+
+def estimate_tokens(text: str) -> int:
+    """Estimate token count based on standard ~4 chars/token heuristic."""
+    if not text:
+        return 0
+    return max(1, len(text) // 4)
 
 # Add hermes_agent repository to Python sys.path
 hermes_path = Path(__file__).parent / "hermes_agent"
@@ -101,6 +109,7 @@ def set_api_key():
 
 @app.route("/api/chat", methods=["POST"])
 def chat_gateway():
+    start_time = time.perf_counter()
     data = request.get_json() or {}
     user_query = data.get("query", "").strip()
     turtle_content = data.get("turtle_content", "").strip()
@@ -116,6 +125,8 @@ def chat_gateway():
     if custom_handler_available and is_custom_handler_active(data):
         custom_res = handle_custom_api_request(data)
         if custom_res.get("status") == "success":
+            if "latency_ms" not in custom_res:
+                custom_res["latency_ms"] = int((time.perf_counter() - start_time) * 1000)
             return jsonify(custom_res)
         elif "error" in custom_res:
             return jsonify(custom_res), 500
@@ -127,6 +138,9 @@ def chat_gateway():
 
     try:
         provider = "openrouter" if ("nousresearch" in requested_model or openrouter_api_key or api_key.startswith("sk-or-")) else "openai-api"
+        prompt_tokens = 0
+        completion_tokens = 0
+        total_tokens = 0
 
         if use_hermes and hermes_agent_available:
             system_prompt = (
@@ -185,14 +199,27 @@ Graph Summary Stats:
                     reply_text = f"<thought>\n{reasoning}\n</thought>\n\n{final_res}"
                 else:
                     reply_text = final_res
+
+                # Extract token usage if provided in dict
+                usage_data = res.get("usage") or res.get("token_usage") or {}
+                if isinstance(usage_data, dict) and usage_data.get("total_tokens"):
+                    prompt_tokens = usage_data.get("prompt_tokens", 0)
+                    completion_tokens = usage_data.get("completion_tokens", 0)
+                    total_tokens = usage_data.get("total_tokens", prompt_tokens + completion_tokens)
+                else:
+                    prompt_tokens = estimate_tokens(system_prompt + user_prompt)
+                    completion_tokens = estimate_tokens(reply_text)
+                    total_tokens = prompt_tokens + completion_tokens
             else:
                 reply_text = str(res)
+                prompt_tokens = estimate_tokens(system_prompt + user_prompt)
+                completion_tokens = estimate_tokens(reply_text)
+                total_tokens = prompt_tokens + completion_tokens
 
             gateway_label = "Onto Agent Gateway (Nous Hermes Framework)"
 
         else:
             # Fallback Native OpenAI Chat Mode
-            import re
             from openai import OpenAI
             base_url = "https://openrouter.ai/api/v1" if provider == "openrouter" else None
             client = OpenAI(api_key=api_key, base_url=base_url)
@@ -234,11 +261,28 @@ Graph Summary Stats:
             reply_text = response.choices[0].message.content
             gateway_label = "Native OpenAI Chat Mode"
 
+            if hasattr(response, "usage") and response.usage:
+                prompt_tokens = getattr(response.usage, "prompt_tokens", 0) or estimate_tokens(str(messages))
+                completion_tokens = getattr(response.usage, "completion_tokens", 0) or estimate_tokens(reply_text)
+                total_tokens = getattr(response.usage, "total_tokens", 0) or (prompt_tokens + completion_tokens)
+            else:
+                prompt_tokens = estimate_tokens(str(messages))
+                completion_tokens = estimate_tokens(reply_text)
+                total_tokens = prompt_tokens + completion_tokens
+
+        latency_ms = int((time.perf_counter() - start_time) * 1000)
+
         return jsonify({
             "status": "success",
             "gateway": gateway_label,
             "model": requested_model,
-            "reply": reply_text
+            "reply": reply_text,
+            "tokens": {
+                "prompt": prompt_tokens,
+                "completion": completion_tokens,
+                "total": total_tokens
+            },
+            "latency_ms": latency_ms
         })
 
     except Exception as e:
